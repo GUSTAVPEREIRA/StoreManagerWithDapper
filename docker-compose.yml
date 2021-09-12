@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  postgresdb:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=DeveloperUser
+      - POSTGRES_PASSWORD=DogThatBarkDoesntBite
+      - POSTGRES_DB=StoreManagerDB
+    ports:
+      - "7800:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=gugupereira123@hotmail.com
+      - PGADMIN_DEFAULT_PASSWORD=123456
+    restart: always
+    depends_on:
+      - postgresdb
+    ports:
+      - "7802:80"
+
+  app:
+    restart: always
+    build:
+      context: ./StoreManager
+    depends_on:
+      - postgresdb
+    ports:
+      - "7801:80"
