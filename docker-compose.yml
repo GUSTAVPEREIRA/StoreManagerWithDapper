@@ -2,7 +2,8 @@ version: "3.7"
 
 services:
   postgresdb:
-    image: postgres:latest
+    build:
+      context: ./database
     restart: always
     environment:
       - POSTGRES_USER=DeveloperUser
@@ -22,11 +23,11 @@ services:
     ports:
       - "7801:80"
 
-#  app:
-#    restart: always
-#    build:
-#      context: ./StoreManager
-#    depends_on:
-#      - postgresdb
-#    ports:
-#      - "7801:80"
+  app:
+    restart: always
+    build:
+      context: ./StoreManager
+    depends_on:
+      - postgresdb
+    ports:
+      - "7802:80"

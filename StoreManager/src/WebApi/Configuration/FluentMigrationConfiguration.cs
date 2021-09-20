@@ -12,6 +12,7 @@ namespace WebApi.Configuration
         public static void AddMigrations(this IServiceCollection services, IConfiguration configuration)
         {
             var settings = configuration.GetSettings();
+            Console.WriteLine(settings.DbConnection.PostgresConnection);
 
             var provider = services
                 .AddFluentMigratorCore()

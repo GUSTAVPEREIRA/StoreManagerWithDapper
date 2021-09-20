@@ -7,6 +7,7 @@ namespace Infrastructure.Providers
     {
         public DbConnection GetConnection(string connection)
         {
+            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             return new NpgsqlConnection(connection);
         }
     }
