@@ -7,9 +7,9 @@ namespace Core.Users.Repositories
     {
         public Task<Role> GetRoleAsync(int id);
 
-        public Task<List<Role>> GetRolesAsync();
-        public Task<Role> CreateRoleAsync();
-        public Task<Role> DeleteRoleAsync();
-        public Task<Role> UpdateRoleAsync();
+        public Task<IEnumerable<Role>> GetRolesAsync();
+        public Task<Role> CreateRoleAsync(Role role);
+        public Task DeleteRoleAsync(int id);
+        public Task<Role> UpdateRoleAsync(Role role);
     }
 }
