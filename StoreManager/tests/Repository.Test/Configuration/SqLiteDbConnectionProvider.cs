@@ -6,7 +6,7 @@ namespace Repository.Test.Configuration
 {
     public class SqLiteDbConnectionProvider : IDbConnectionProvider
     {
-        public DbConnection GetDbConnection(string connection)
+        public DbConnection GetConnection(string connection)
         {
             return new SQLiteConnection(connection);
         }
