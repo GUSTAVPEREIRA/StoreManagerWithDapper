@@ -1,13 +1,13 @@
 using Bogus;
 using Core.Users;
 
-namespace Dummie.Test.Users
+namespace Dummies.Test.Users
 {
-    public sealed class RoleDummie : Faker<Role>
+    public class RoleDummie : Faker<Role>
     {
         public RoleDummie()
         {
-            RuleFor(x => x.Name, f => f.Name.FullName());
+            RuleFor(x => x.Name, f => new Faker().Random.String(5, 100));
             RuleFor(x => x.IsAdmin, f => f.Random.Bool());
         }
     }
