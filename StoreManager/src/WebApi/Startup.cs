@@ -19,8 +19,9 @@ namespace WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSwaggerConfiguration();
+            services.AddSwagger();
             services.AddMigrations(Configuration);
+            services.AddDependencyInjection();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

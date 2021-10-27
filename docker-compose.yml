@@ -26,7 +26,7 @@ services:
   app:
     restart: always
     build:
-      context: ./StoreManager
+      context: ./StoreManager/src
     depends_on:
       - postgresdb
     ports:

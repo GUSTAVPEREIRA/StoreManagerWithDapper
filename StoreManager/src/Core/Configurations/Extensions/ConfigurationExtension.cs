@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace Core.Configurations
+namespace Core.Configurations.Extensions
 {
     public static class ConfigurationExtension
     {
@@ -11,7 +11,7 @@ namespace Core.Configurations
             return settings;
         }
 
-        public static string GetConnectionString(this IConfiguration configuration)
+        public static string GetConnectionsString(this IConfiguration configuration)
         {
             var setting = GetSettings(configuration);
 

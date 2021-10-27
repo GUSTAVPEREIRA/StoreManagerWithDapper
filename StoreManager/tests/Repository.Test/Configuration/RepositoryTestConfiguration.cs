@@ -14,7 +14,7 @@ namespace Repository.Test.Configuration
 
         public IConfigurationRoot CreateConfigurations(string database)
         {
-            _configurations.Add("ConnectionStrings:StoreManagerDB", DatabaseConfiguration.GetConnectionString(database));
+            _configurations.Add("DbConnection:PostgresConnection", DatabaseConfiguration.GetConnectionString(database));
             
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(_configurations)
                 .Build();

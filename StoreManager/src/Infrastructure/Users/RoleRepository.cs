@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Configurations;
 using Core.Users;
 using Core.Users.Repositories;
 using Dapper;
@@ -9,9 +8,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Users
 {
-    public class RoleRepository : IRoleRepository
+    public class RoleRepository : BaseRepository, IRoleRepository
     {
-        private readonly IConfiguration _configuration;
         private const string GetRoleQuery = @"SELECT id, name, is_admin FROM roles WHERE id = @id";
         private const string GetRolesQuery = @"SELECT id, name, is_admin FROM roles";
 
@@ -21,15 +19,14 @@ namespace Infrastructure.Users
         private const string UpdateRoleQuery = @"UPDATE roles SET name = @name, is_admin = @is_admin WHERE id = @id";
         private const string DeleteRoleQuery = @"DELETE FROM roles WHERE id = @id";
 
-        public RoleRepository(IConfiguration configuration)
+        public RoleRepository(IConfiguration configuration, IDbConnectionProvider provider) : base(configuration,
+            provider)
         {
-            _configuration = configuration;
         }
 
         public async Task<Role> GetRoleAsync(int id)
         {
-            var connectionString = _configuration.GetConnectionString();
-            await using var connection = new PostgresConnectionProvider().GetConnection(connectionString);
+            await using var connection = GetConnection();
 
             var role = await connection.QueryFirstOrDefaultAsync<Role>(GetRoleQuery, new
             {
@@ -41,8 +38,7 @@ namespace Infrastructure.Users
 
         public async Task<IEnumerable<Role>> GetRolesAsync()
         {
-            var connectionString = _configuration.GetConnectionString();
-            await using var connection = new PostgresConnectionProvider().GetConnection(connectionString);
+            await using var connection = GetConnection();
 
             var roles = await connection.QueryAsync<Role>(GetRolesQuery);
 
@@ -51,8 +47,7 @@ namespace Infrastructure.Users
 
         public async Task<Role> CreateRoleAsync(Role role)
         {
-            var connectionString = _configuration.GetConnectionString();
-            await using var connection = new PostgresConnectionProvider().GetConnection(connectionString);
+            await using var connection = GetConnection();
 
             var roleId = await connection.ExecuteAsync(InsertRoleQuery, new
             {
@@ -67,8 +62,7 @@ namespace Infrastructure.Users
 
         public async Task DeleteRoleAsync(int id)
         {
-            var connectionString = _configuration.GetConnectionString();
-            await using var connection = new PostgresConnectionProvider().GetConnection(connectionString);
+            await using var connection = GetConnection();
 
             await connection.ExecuteAsync(DeleteRoleQuery, new
             {
@@ -78,8 +72,7 @@ namespace Infrastructure.Users
 
         public async Task<Role> UpdateRoleAsync(Role role)
         {
-            var connectionString = _configuration.GetConnectionString();
-            await using var connection = new PostgresConnectionProvider().GetConnection(connectionString);
+            await using var connection = GetConnection();
 
             var isUpdated = await connection.ExecuteAsync(UpdateRoleQuery, new
             {
@@ -87,7 +80,7 @@ namespace Infrastructure.Users
                 is_admin = role.IsAdmin,
                 id = role.Id
             });
-            
+
             return isUpdated == 1 ? role : null;
         }
     }

@@ -2,10 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 
 # Copy Files to var/www/app
-COPY src/WebApi /var/www/app/API
-COPY src/Application /var/www/app/Application
-COPY src/Core /var/www/app/Core
-COPY src/Infrastructure /var/www/app/Infrastructure
+COPY WebApi /var/www/app/API
+COPY Application /var/www/app/Application
+COPY Core /var/www/app/Core
+COPY Infrastructure /var/www/app/Infrastructure
 
 # Set enviroments if release version
 RUN dotnet publish /var/www/app/API -c Release -o out
