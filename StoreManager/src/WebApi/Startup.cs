@@ -22,8 +22,6 @@ namespace WebApi
             services.AddSwagger();
             services.AddMigrations(Configuration);
             services.AddDependencyInjection();
-            services.AddAutoMapper();
-            services.AddFluentValidation();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

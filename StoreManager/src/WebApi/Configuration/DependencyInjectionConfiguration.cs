@@ -1,5 +1,4 @@
-using Application.Users;
-using Core.Users.Interfaces;
+using Core.Users.Repositories;
 using Infrastructure.Providers;
 using Infrastructure.Users;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,6 @@ namespace WebApi.Configuration
         {
             services.AddScoped<IDbConnectionProvider, PostgresConnectionProvider>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IRoleService, RoleService>();
         }
     }
 }
