@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Users;
-using Core.Users.Repositories;
+using Core.Users.Interfaces;
 using Dapper;
 using Infrastructure.Providers;
 using Microsoft.Extensions.Configuration;
@@ -13,8 +13,7 @@ namespace Infrastructure.Users
         private const string GetRoleQuery = @"SELECT id, name, is_admin FROM roles WHERE id = @id";
         private const string GetRolesQuery = @"SELECT id, name, is_admin FROM roles";
 
-        private const string InsertRoleQuery =
-            @"INSERT INTO roles (name, is_admin) VALUES (@name, @is_admin) RETURNING Id";
+        private const string InsertRoleQuery = @"INSERT INTO roles (name, is_admin) VALUES (@name, @is_admin) RETURNING Id";
 
         private const string UpdateRoleQuery = @"UPDATE roles SET name = @name, is_admin = @is_admin WHERE id = @id";
         private const string DeleteRoleQuery = @"DELETE FROM roles WHERE id = @id";
@@ -49,7 +48,7 @@ namespace Infrastructure.Users
         {
             await using var connection = GetConnection();
 
-            var roleId = await connection.ExecuteAsync(InsertRoleQuery, new
+            var roleId = await connection.ExecuteScalarAsync<int>(InsertRoleQuery, new
             {
                 name = role.Name,
                 is_admin = role.IsAdmin
@@ -74,7 +73,7 @@ namespace Infrastructure.Users
         {
             await using var connection = GetConnection();
 
-            var isUpdated = await connection.ExecuteAsync(UpdateRoleQuery, new
+            var isUpdated = await connection.ExecuteScalarAsync<int>(UpdateRoleQuery, new
             {
                 name = role.Name,
                 is_admin = role.IsAdmin,

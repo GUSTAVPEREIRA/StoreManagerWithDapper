@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Users;
-using Core.Users.Repositories;
+using Core.Users.Interfaces;
 using Dummie.Test.Users;
 
 namespace Repository.Test.Seeders
