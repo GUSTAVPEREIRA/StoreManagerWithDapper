@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Core.Users.Repositories
+namespace Core.Users.Interfaces
 {
     public interface IRoleRepository
     {
