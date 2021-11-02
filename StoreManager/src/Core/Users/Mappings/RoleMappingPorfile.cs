@@ -7,8 +7,8 @@ namespace Core.Users.Mappings
     {
         public RoleMappingProfile()
         {
-            CreateMap<RoleRequest, Role>();
-            CreateMap<RoleUpdatedRequest, Role>();
+            CreateMap<RoleRequest, Role>().ReverseMap();
+            CreateMap<RoleUpdatedRequest, Role>().ReverseMap();
             CreateMap<Role, RoleResponse>();
         }
     }

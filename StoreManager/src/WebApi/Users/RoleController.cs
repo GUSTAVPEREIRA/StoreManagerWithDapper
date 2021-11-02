@@ -23,7 +23,7 @@ namespace WebApi.Users
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("Create")]
-        public async Task<ActionResult<RoleResponse>> CreateRole(RoleRequest request)
+        public async Task<IActionResult> CreateRole(RoleRequest request)
         {
             var role = await _roleService.CreateRoleAsync(request);
             return CreatedAtAction(nameof(GetRole), new {id = role.Id}, role);
@@ -35,7 +35,7 @@ namespace WebApi.Users
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("Update")]
-        public async Task<ActionResult<RoleResponse>> UpdateRole(RoleUpdatedRequest request)
+        public async Task<IActionResult> UpdateRole(RoleUpdatedRequest request)
         {
             var role = await _roleService.UpdateRoleAsync(request);
 
@@ -48,7 +48,7 @@ namespace WebApi.Users
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("Get/{id:int}")]
-        public async Task<ActionResult<RoleResponse>> GetRole(int id)
+        public async Task<IActionResult> GetRole(int id)
         {
             var role = await _roleService.GetRoleAsync(id);
 
@@ -61,7 +61,7 @@ namespace WebApi.Users
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("List")]
-        public async Task<ActionResult<IEnumerable<RoleResponse>>> ListRoles()
+        public async Task<IActionResult> ListRoles()
         {
             var roles = await _roleService.GetRolesAsync();
 
@@ -73,7 +73,7 @@ namespace WebApi.Users
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Route("Delete/{id:int}")]
-        public async Task<ActionResult> DeleteRole(int id)
+        public async Task<IActionResult> DeleteRole(int id)
         {
             await _roleService.DeleteRoleAsync(id);
             return NoContent();
