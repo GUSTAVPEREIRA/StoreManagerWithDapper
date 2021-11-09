@@ -13,6 +13,8 @@ namespace WebApi.Configuration
             services.AddScoped<IDbConnectionProvider, PostgresConnectionProvider>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
     }
 }

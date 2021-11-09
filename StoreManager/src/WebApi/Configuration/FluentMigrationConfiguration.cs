@@ -1,5 +1,4 @@
 using System;
-using Core.Configurations;
 using Core.Configurations.Extensions;
 using FluentMigrator.Runner;
 using Infrastructure.Migrations;

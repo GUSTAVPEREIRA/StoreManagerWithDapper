@@ -11,5 +11,6 @@ namespace Core.Users.Interfaces
         public Task<Role> CreateRoleAsync(Role role);
         public Task DeleteRoleAsync(int id);
         public Task<Role> UpdateRoleAsync(Role role);
+        public Task<bool> CheckIfRoleExist(int id);
     }
 }

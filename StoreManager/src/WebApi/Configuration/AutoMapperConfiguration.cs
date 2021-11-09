@@ -8,6 +8,7 @@ namespace WebApi.Configuration
         public static void AddAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(RoleMappingProfile));
+            services.AddAutoMapper(typeof(UserMappingProfile));
         }
     }
 }

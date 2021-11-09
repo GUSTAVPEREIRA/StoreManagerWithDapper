@@ -18,12 +18,11 @@ namespace WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
             services.AddSwagger();
             services.AddMigrations(Configuration);
             services.AddDependencyInjection();
             services.AddAutoMapper();
-            services.AddFluentValidation();
+            services.AddFluentValidationConfiguration();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -37,7 +36,6 @@ namespace WebApi
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

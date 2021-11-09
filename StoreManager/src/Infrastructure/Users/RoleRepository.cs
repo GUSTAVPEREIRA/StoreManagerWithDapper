@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Users;
 using Core.Users.Interfaces;
@@ -17,6 +18,7 @@ namespace Infrastructure.Users
 
         private const string UpdateRoleQuery = @"UPDATE roles SET name = @name, is_admin = @is_admin WHERE id = @id";
         private const string DeleteRoleQuery = @"DELETE FROM roles WHERE id = @id";
+        private const string CheckIfRoleExistQuery = @"SELECT id from roles WHERE id = @id"; 
 
         public RoleRepository(IConfiguration configuration, IDbConnectionProvider provider) : base(configuration,
             provider)
@@ -81,6 +83,18 @@ namespace Infrastructure.Users
             });
 
             return isUpdated == 1 ? role : null;
+        }
+
+        public async Task<bool> CheckIfRoleExist(int id)
+        {
+            await using var connection = GetConnection();
+
+            var roleExist = await connection.QueryFirstOrDefaultAsync<int>(CheckIfRoleExistQuery, new
+            {
+                id
+            });
+
+            return roleExist >= 1;
         }
     }
 }
