@@ -5,7 +5,7 @@ using Core.Users.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApi.Users
+namespace Api.Users
 {
     [Route("api/[controller]")]
     [ApiController]

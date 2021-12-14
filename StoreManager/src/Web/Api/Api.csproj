@@ -50,8 +50,4 @@
       <Content Remove="Controllers\**" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Auth" />
-    </ItemGroup>
-
 </Project>

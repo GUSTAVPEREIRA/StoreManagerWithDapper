@@ -3,7 +3,7 @@ using Core.Users.Interfaces;
 using Core.Users.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApi.Users
+namespace Api.Users
 {
     [ApiController]
     [Route("api/[controller]")]

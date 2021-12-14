@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Api.Users;
 using Core.Users.Interfaces;
 using Core.Users.Models;
 using Dummie.Test.Users;
@@ -7,7 +8,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
-using WebApi.Users;
 using Xunit;
 
 namespace Controller.Test.Users

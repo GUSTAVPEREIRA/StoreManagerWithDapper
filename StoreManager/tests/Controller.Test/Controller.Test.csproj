@@ -29,4 +29,8 @@
       <ProjectReference Include="..\Dummies.Test\Dummies.Test.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Auth" />
+    </ItemGroup>
+
 </Project>
