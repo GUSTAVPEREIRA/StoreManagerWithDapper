@@ -5,14 +5,14 @@ using System.Text;
 
 namespace Core.Cryptography
 {
-    public class Aes256
+    public static class Aes256
     {
         private static readonly byte[] SaltBytes = {2, 1, 7, 3, 6, 4, 8, 5};
 
-        public static string EncryptString(string data, string password)
+        public static string EncryptString(string data, string secret)
         {
             var bytesToBeEncrypted = Encoding.UTF8.GetBytes(data);
-            var passwordBytes = Encoding.UTF8.GetBytes(password);
+            var passwordBytes = Encoding.UTF8.GetBytes(secret);
 
             passwordBytes = SHA512.Create().ComputeHash(passwordBytes);
             var bytesEncrypted = Encrypt(bytesToBeEncrypted, passwordBytes);

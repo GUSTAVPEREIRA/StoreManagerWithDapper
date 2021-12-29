@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Core.Errors;
 using Core.Users.Interfaces;
 using Core.Users.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -20,9 +22,20 @@ namespace Api.Users
         [Route("Create")]
         public async Task<ActionResult> InsertUser(UserRequest request)
         {
-            var user = await _userService.InsertUserAsync(request);
+            try
+            {
+                var user = await _userService.InsertUserAsync(request);
 
-            return CreatedAtAction(nameof(GetUser), new {id = user.Id}, user);
+                return CreatedAtAction(nameof(GetUser), new {id = user.Id}, user);
+            }
+            catch (EnvironmentVariableNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]

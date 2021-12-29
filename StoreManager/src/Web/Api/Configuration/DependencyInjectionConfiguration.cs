@@ -1,4 +1,6 @@
+using Application.Auth;
 using Application.Users;
+using Core.Auth.Interfaces;
 using Core.Users.Interfaces;
 using Infrastructure.Providers;
 using Infrastructure.Users;
@@ -15,6 +17,7 @@ namespace Api.Configuration
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IJwtService, JwtService>();
         }
     }
 }

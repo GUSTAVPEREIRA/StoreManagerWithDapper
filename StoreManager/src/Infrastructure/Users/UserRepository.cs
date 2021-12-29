@@ -22,12 +22,17 @@ namespace Infrastructure.Users
                  WHERE id=@id";
 
         private const string SelectUserQuery = @"SELECT * FROM users as us
-                              INNER JOIN roles as rl ON us.role_id = rl.id 
+                              INNER JOIN roles AS rl ON us.role_id = rl.id 
                               WHERE us.id=@id";
 
         private const string SelectUsersQuery = @"SELECT * FROM users as us
-                              INNER JOIN roles as rl ON us.role_id = rl.id
+                              INNER JOIN roles AS rl ON us.role_id = rl.id
                               WHERE true";
+
+        private const string SelectUserByPasswordAndEmail = @"
+        SELECT us.email, us.id, us.full_name, rl.id, rl.name, rl.is_admin FROM users AS us
+        INNER JOIN roles AS rl ON us.role_id = rl.id
+        WHERE us.email = @email AND us.password = @password";
 
         public UserRepository(IConfiguration configuration, IDbConnectionProvider provider) : base(configuration,
             provider)
@@ -55,11 +60,10 @@ namespace Infrastructure.Users
         public async Task<User> UpdateUser(User user)
         {
             await using var connection = GetConnection();
-            
+
             await connection.ExecuteScalarAsync<int>(UpdateUserQuery, new
             {
                 email = user.Email,
-                password = user.Password,
                 full_name = user.FullName,
                 role_id = user.Role.Id,
                 disabled = user.Disabled,
@@ -99,6 +103,27 @@ namespace Infrastructure.Users
                 }, splitOn: "role_id").Result;
 
             return users;
+        }
+
+        public async Task<User> GetUserByEmailAndPassword(string email, string password)
+        {
+            await using var connection = GetConnection();
+
+            var users = connection.QueryAsync<User, Role, User>(SelectUserByPasswordAndEmail,
+                (user, role) =>
+                {
+                    user.Role = role;
+                    return user;
+                }, new
+                {
+                    email,
+                    password
+                }, splitOn: "role_id").Result;
+
+            var result = users.First();
+            result.Password = "";
+
+            return result;
         }
     }
 }

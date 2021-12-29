@@ -14,7 +14,7 @@ namespace Core.Errors.Middlewares
         {
             _exceptionHandlers = new Dictionary<Type, Action<ExceptionContext>>
             {
-                {typeof(EntityNotFoundException), HandleEntityNotFoundException}
+                {typeof(EnvironmentVariableNotFoundException), HandleEnvironmentVariableNotFoundException}
             };
         }
 
@@ -72,9 +72,9 @@ namespace Core.Errors.Middlewares
             context.ExceptionHandled = true;
         }
 
-        private static void HandleEntityNotFoundException(ExceptionContext context)
+        private static void HandleEnvironmentVariableNotFoundException(ExceptionContext context)
         {
-            var exception = context.Exception as EntityNotFoundException;
+            var exception = context.Exception as EnvironmentVariableNotFoundException;
 
             var details = new ProblemDetails()
             {

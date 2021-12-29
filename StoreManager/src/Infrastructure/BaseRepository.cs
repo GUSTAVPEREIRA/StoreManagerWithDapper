@@ -7,19 +7,19 @@ namespace Infrastructure
 {
     public abstract class BaseRepository
     {
-        protected readonly IDbConnectionProvider DbConnectionProvider;
+        private readonly IDbConnectionProvider _dbConnectionProvider;
         private readonly string _connectionString;
 
         protected BaseRepository(IConfiguration configuration, IDbConnectionProvider provider)
         {
-            DbConnectionProvider = provider;
+            _dbConnectionProvider = provider;
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             _connectionString = configuration.GetConnectionsString();
         }
 
-        public DbConnection GetConnection()
+        protected DbConnection GetConnection()
         {
-            return DbConnectionProvider.GetDbConnection(_connectionString);
+            return _dbConnectionProvider.GetDbConnection(_connectionString);
         }
     }
 }

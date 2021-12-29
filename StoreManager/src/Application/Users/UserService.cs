@@ -2,9 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
+using Core.Auth.Models;
+using Core.Configurations.Extensions;
+using Core.Cryptography;
+using Core.Errors;
 using Core.Users;
 using Core.Users.Interfaces;
 using Core.Users.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Users
 {
@@ -13,21 +18,30 @@ namespace Application.Users
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _mapper = mapper;
+            _configuration = configuration;
         }
-
-
+        
         public async Task<UserResponse> InsertUserAsync(UserRequest userRequest)
         {
+            var settings = _configuration.GetSettings();
             await CheckRoleExists(userRequest.RoleId);
             var user = _mapper.Map<User>(userRequest);
-            user.Disabled = false;
             
+            user.Disabled = false;
+
+            if (settings.AuthSettings != null && string.IsNullOrEmpty(settings.AuthSettings.JwtSecret))
+            {
+                throw new EnvironmentVariableNotFoundException(nameof(settings.AuthSettings.JwtSecret));
+            }
+            
+            user.Password = Aes256.EncryptString(user.Password, settings.AuthSettings.JwtSecret);
             user = await _userRepository.CreateUser(user);
 
             return _mapper.Map<UserResponse>(user);
@@ -37,7 +51,7 @@ namespace Application.Users
         {
             await CheckRoleExists(updatedRequest.RoleId);
             var user = _mapper.Map<User>(updatedRequest);
-
+            
             user = await _userRepository.UpdateUser(user);
 
             return _mapper.Map<UserResponse>(user);
@@ -66,6 +80,14 @@ namespace Application.Users
             var usersResponse = _mapper.Map<IEnumerable<UserResponse>>(users);
 
             return usersResponse;
+        }
+        
+        public async Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(AuthLoginRequest loginRequest)
+        {
+            var user = await _userRepository.GetUserByEmailAndPassword(loginRequest.Email, loginRequest.Password);
+            var authUserResponse = _mapper.Map<AuthUserResponse>(user);
+
+            return authUserResponse;
         }
     }
 }
