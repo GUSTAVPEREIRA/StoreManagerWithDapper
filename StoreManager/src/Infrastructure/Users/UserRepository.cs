@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Core.Users;
 using Core.Users.Interfaces;
@@ -30,7 +31,8 @@ namespace Infrastructure.Users
                               WHERE true";
 
         private const string SelectUserByPasswordAndEmail = @"
-        SELECT us.email, us.id, us.full_name, rl.id, rl.name, rl.is_admin FROM users AS us
+        SELECT us.role_id AS role_id, us.email, us.id, us.full_name, rl.*
+        FROM users AS us
         INNER JOIN roles AS rl ON us.role_id = rl.id
         WHERE us.email = @email AND us.password = @password";
 
@@ -118,9 +120,16 @@ namespace Infrastructure.Users
                 {
                     email,
                     password
-                }, splitOn: "role_id").Result;
+                }, splitOn: "role_id, id").Result;
 
-            var result = users.First();
+            var userList = users.ToList();
+            
+            if (!userList.Any())
+            {
+                throw new AuthenticationException();
+            }
+
+            var result = userList.First();
             result.Password = "";
 
             return result;

@@ -4,8 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Core.Auth.Interfaces;
+using Core.Auth.Models;
 using Core.Configurations.Extensions;
-using Core.Users;
+using Core.Users.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,10 +15,16 @@ namespace Application.Auth
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-        public string GenerateToken(User user)
+
+        public JwtService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public BearerTokenResponse GenerateToken(AuthUserResponse user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var settings = ConfigurationExtension.GetSettings(_configuration);
+            var settings = _configuration.GetSettings();
 
             var key = Encoding.ASCII.GetBytes(settings.AuthSettings.JwtSecret);
             var expireTime = Convert.ToInt32(settings.AuthSettings.JwtExpireTimesInMinuts);
@@ -33,10 +40,16 @@ namespace Application.Auth
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            
+            var response = new BearerTokenResponse
+            {
+                Token = tokenHandler.WriteToken(token)
+            };
+
+            return response;
         }
 
-        private IEnumerable<Claim> GenerateClaims(User user)
+        private IEnumerable<Claim> GenerateClaims(AuthUserResponse user)
         {
             var claims = new List<Claim>()
             {

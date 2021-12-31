@@ -20,6 +20,7 @@ namespace Api
         {
             services.AddSwagger();
             services.AddMigrations(Configuration);
+            services.AddAuthConfiguration(Configuration);
             services.AddDependencyInjection();
             services.AddAutoMapper();
             services.AddFluentValidationConfiguration();
@@ -35,7 +36,7 @@ namespace Api
             app.UseSwaggerConfiguration();
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseAuthorization();
+            app.UseAuthConfiguration();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

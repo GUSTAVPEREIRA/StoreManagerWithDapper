@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Errors;
 using Core.Users.Interfaces;
 using Core.Users.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Users
@@ -20,6 +23,11 @@ namespace Api.Users
 
         [HttpPost]
         [Route("Create")]
+        [Authorize(Roles = "IsAdmin")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> InsertUser(UserRequest request)
         {
             try
@@ -34,12 +42,16 @@ namespace Api.Users
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpGet]
         [Route("Get/{id:int}")]
+        [Authorize]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> GetUser(int id)
         {
             var user = await _userService.GetUserAsync(id);
@@ -49,6 +61,10 @@ namespace Api.Users
 
         [HttpGet]
         [Route("List")]
+        [Authorize]
+        [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> GetUsers()
         {
             var users = await _userService.GetUsersAsync();
@@ -58,6 +74,11 @@ namespace Api.Users
 
         [HttpPut]
         [Route("Update")]
+        [Authorize(Roles = "IsAdmin")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateUser(UserUpdatedRequest request)
         {
             var user = await _userService.UpdatedUserAsync(request);

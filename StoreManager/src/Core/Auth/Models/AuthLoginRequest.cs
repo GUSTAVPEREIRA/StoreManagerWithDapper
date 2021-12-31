@@ -1,7 +1,11 @@
-namespace Core.Auth.Models;
-
-public class AuthLoginRequest
+namespace Core.Auth.Models
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public class AuthLoginRequest
+    {
+        /// <example>something@host.com</example>
+        public string Email { get; set; }
+        
+        /// <example>123456</example>
+        public string Password { get; set; }
+    }
 }
