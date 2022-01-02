@@ -19,7 +19,7 @@ namespace Infrastructure.Users
               (@email, @password, @disabled, @full_name, @role_id) RETURNING id";
 
         private const string UpdateUserQuery = @"UPDATE users SET
-                 email=@email, password=@password, disabled=@disabled, full_name=@full_name, role_id=@role_id 
+                 email=@email, disabled=@disabled, full_name=@full_name, role_id=@role_id 
                  WHERE id=@id";
 
         private const string SelectUserQuery = @"SELECT * FROM users as us
@@ -31,7 +31,7 @@ namespace Infrastructure.Users
                               WHERE true";
 
         private const string SelectUserByPasswordAndEmail = @"
-        SELECT us.role_id AS role_id, us.email, us.id, us.full_name, rl.*
+        SELECT us.role_id AS role_id, us.email, us.id, us.full_name, us.disabled, rl.*
         FROM users AS us
         INNER JOIN roles AS rl ON us.role_id = rl.id
         WHERE us.email = @email AND us.password = @password";
@@ -122,17 +122,7 @@ namespace Infrastructure.Users
                     password
                 }, splitOn: "role_id, id").Result;
 
-            var userList = users.ToList();
-            
-            if (!userList.Any())
-            {
-                throw new AuthenticationException();
-            }
-
-            var result = userList.First();
-            result.Password = "";
-
-            return result;
+            return users.FirstOrDefault();
         }
     }
 }

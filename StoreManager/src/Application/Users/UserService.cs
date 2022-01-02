@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core.Auth.Models;
@@ -40,19 +41,7 @@ namespace Application.Users
 
             return _mapper.Map<UserResponse>(user);
         }
-
-        private string EncryptPassword(string password)
-        {
-            var settings = _configuration.GetSettings();
-
-            if (settings.AuthSettings == null || string.IsNullOrEmpty(settings.AuthSettings.JwtSecret))
-            {
-                throw new EnvironmentVariableNotFoundException(nameof(settings.AuthSettings.JwtSecret));
-            }
-
-            return Aes256.EncryptString(password, settings.AuthSettings.JwtSecret);
-        }
-
+        
         public async Task<UserResponse> UpdatedUserAsync(UserUpdatedRequest updatedRequest)
         {
             await CheckRoleExists(updatedRequest.RoleId);
@@ -61,14 +50,6 @@ namespace Application.Users
             user = await _userRepository.UpdateUser(user);
 
             return _mapper.Map<UserResponse>(user);
-        }
-
-        private async Task CheckRoleExists(int roleId)
-        {
-            if (await _roleRepository.CheckIfRoleExist(roleId) == false)
-            {
-                throw new Exception("Role does not exist!");
-            }
         }
 
         public async Task<UserResponse> GetUserAsync(int id)
@@ -92,9 +73,36 @@ namespace Application.Users
         {
             loginRequest.Password = EncryptPassword(loginRequest.Password);
             var user = await _userRepository.GetUserByEmailAndPassword(loginRequest.Email, loginRequest.Password);
+
+            if (user == null)
+            {
+                throw new AuthenticationException();
+            }
+            
+            user.Password = "";
             var authUserResponse = _mapper.Map<AuthUserResponse>(user);
 
             return authUserResponse;
+        }
+
+        private async Task CheckRoleExists(int roleId)
+        {
+            if (await _roleRepository.CheckIfRoleExist(roleId) == false)
+            {
+                throw new Exception("Role does not exist!");
+            }
+        }
+        
+        private string EncryptPassword(string password)
+        {
+            var settings = _configuration.GetSettings();
+
+            if (settings.AuthSettings == null || string.IsNullOrEmpty(settings.AuthSettings.JwtSecret))
+            {
+                throw new EnvironmentVariableNotFoundException(nameof(settings.AuthSettings.JwtSecret));
+            }
+
+            return Aes256.EncryptString(password, settings.AuthSettings.JwtSecret);
         }
     }
 }

@@ -1,11 +1,13 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Core.Users.Interfaces;
 using Dummie.Test.Users;
 using FluentAssertions;
 using Infrastructure.Users;
+using NSubstitute.ExceptionExtensions;
 using Repository.Test.Configuration;
 using Repository.Test.Seeders;
 using Xunit;
@@ -57,6 +59,7 @@ namespace Repository.Test.Users
             await _userRepository.UpdateUser(updatedUser);
             user = await _userRepository.GetUser(user.Id);
 
+            user.Password = updatedUser.Password;
             user.Should().BeEquivalentTo(updatedUser);
         }
 
@@ -81,6 +84,17 @@ namespace Repository.Test.Users
             var result = await _userRepository.GetUsers();
 
             users.Should().BeEquivalentTo(result);
+        }
+
+        [Fact]
+        public async Task GetUsersByEmailAndPasswordOk()
+        {
+            var users = await _userSeeder.CreateUsers(1);
+            var user = users.First();
+
+            var result = await _userRepository.GetUserByEmailAndPassword(user.Email, user.Password);
+            user.Password = null;
+            user.Should().BeEquivalentTo(result);
         }
 
         public void Dispose()
