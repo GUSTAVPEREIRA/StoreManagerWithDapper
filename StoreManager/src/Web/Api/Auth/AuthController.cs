@@ -30,7 +30,7 @@ namespace Api.Auth
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [AllowAnonymous]
-        public async Task<ActionResult> InsertUser(AuthLoginRequest request)
+        public async Task<ActionResult> AuthLogin(AuthLoginRequest request)
         {
             try
             {

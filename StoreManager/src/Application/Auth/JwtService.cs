@@ -25,10 +25,8 @@ namespace Application.Auth
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var settings = _configuration.GetSettings();
-
             var key = Encoding.ASCII.GetBytes(settings.AuthSettings.JwtSecret);
             var expireTime = Convert.ToInt32(settings.AuthSettings.JwtExpireTimesInMinuts);
-
             var claims = GenerateClaims(user);
 
             var tokenDescriptor = new SecurityTokenDescriptor
