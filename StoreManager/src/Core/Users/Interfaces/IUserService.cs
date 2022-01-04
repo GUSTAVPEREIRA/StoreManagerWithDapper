@@ -11,6 +11,7 @@ namespace Core.Users.Interfaces
         public Task<UserResponse> UpdatedUserAsync(UserUpdatedRequest updatedRequest);
         public Task<UserResponse> GetUserAsync(int id);
         public Task<IEnumerable<UserResponse>> GetUsersAsync();
-        Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(AuthLoginRequest loginRequest);
+        public Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(AuthLoginRequest loginRequest);
+        public Task<UserResponse> CreateOrUpdateUserDefault();
     }
 }

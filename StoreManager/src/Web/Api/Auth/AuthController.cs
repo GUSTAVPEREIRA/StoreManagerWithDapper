@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Core.Auth.Interfaces;
 using Core.Auth.Models;
 using Core.Users.Interfaces;
+using Core.Users.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,24 @@ namespace Api.Auth
             catch (Exception)
             {
                 return Unauthorized("Invalid password or email");
+            }
+        }
+
+        [HttpPost]
+        [Route("RestartDefaultUser")]
+        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> RestartDefaultUser()
+        {
+            try
+            {
+                var user = await _userService.CreateOrUpdateUserDefault();
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         }
     }

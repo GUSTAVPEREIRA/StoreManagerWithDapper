@@ -10,5 +10,7 @@ namespace Core.Users.Interfaces
         public Task<User> GetUser(int id);
         public Task<IEnumerable<User>> GetUsers();
         public Task<User> GetUserByEmailAndPassword(string email, string password);
+        public Task<User> GetUserByEmail(string email);
+        public Task<User> ChangeUserPassword(User user);
     }
 }

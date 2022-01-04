@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Core.Users;
 using Core.Users.Interfaces;
@@ -35,6 +34,14 @@ namespace Infrastructure.Users
         FROM users AS us
         INNER JOIN roles AS rl ON us.role_id = rl.id
         WHERE us.email = @email AND us.password = @password";
+
+        private const string SelectUserByEmailQuery = @"SELECT * FROM users as us
+                              INNER JOIN roles AS rl ON us.role_id = rl.id 
+                              WHERE us.email=@email";
+
+        private const string UpdateUserPasswordQuery = @"UPDATE users SET
+                 password=@password
+                 WHERE id=@id";
 
         public UserRepository(IConfiguration configuration, IDbConnectionProvider provider) : base(configuration,
             provider)
@@ -93,6 +100,24 @@ namespace Infrastructure.Users
             return user;
         }
 
+        public async Task<User> GetUserByEmail(string email)
+        {
+            await using var connection = GetConnection();
+
+            var user = connection.QueryAsync<User, Role, User>(SelectUserByEmailQuery,
+                (user, role) =>
+                {
+                    user.Role = role;
+                    return user;
+                },
+                new
+                {
+                    email
+                }, splitOn: "role_id").Result.FirstOrDefault();
+
+            return user;
+        }
+
         public async Task<IEnumerable<User>> GetUsers()
         {
             await using var connection = GetConnection();
@@ -123,6 +148,19 @@ namespace Infrastructure.Users
                 }, splitOn: "role_id, id").Result;
 
             return users.FirstOrDefault();
+        }
+
+        public async Task<User> ChangeUserPassword(User user)
+        {
+            await using var connection = GetConnection();
+
+            await connection.ExecuteScalarAsync<int>(UpdateUserPasswordQuery, new
+            {
+                password = user.Password,
+                id = user.Id
+            });
+
+            return user;
         }
     }
 }
