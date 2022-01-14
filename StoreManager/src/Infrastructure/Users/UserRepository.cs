@@ -48,7 +48,7 @@ namespace Infrastructure.Users
         {
         }
 
-        public async Task<User> CreateUser(User user)
+        public async Task<User> CreateUserAsync(User user)
         {
             await using var connection = GetConnection();
 
@@ -66,7 +66,7 @@ namespace Infrastructure.Users
             return user;
         }
 
-        public async Task<User> UpdateUser(User user)
+        public async Task<User> UpdateUserAsync(User user)
         {
             await using var connection = GetConnection();
 
@@ -82,7 +82,7 @@ namespace Infrastructure.Users
             return user;
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUserAsync(int id)
         {
             await using var connection = GetConnection();
 
@@ -100,7 +100,7 @@ namespace Infrastructure.Users
             return user;
         }
 
-        public async Task<User> GetUserByEmail(string email)
+        public async Task<User> GetUserByEmailAsync(string email)
         {
             await using var connection = GetConnection();
 
@@ -118,7 +118,7 @@ namespace Infrastructure.Users
             return user;
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<IEnumerable<User>> GetUsersAsync()
         {
             await using var connection = GetConnection();
 
@@ -132,7 +132,7 @@ namespace Infrastructure.Users
             return users;
         }
 
-        public async Task<User> GetUserByEmailAndPassword(string email, string password)
+        public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
         {
             await using var connection = GetConnection();
 
@@ -150,7 +150,7 @@ namespace Infrastructure.Users
             return users.FirstOrDefault();
         }
 
-        public async Task<User> ChangeUserPassword(User user)
+        public async Task<User> ChangeUserPasswordAsync(User user)
         {
             await using var connection = GetConnection();
 

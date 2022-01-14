@@ -39,7 +39,7 @@ public class AuthControllerTest
             Email = response.Email,
             Password = response.Password
         };
-        
+
         var bearerTokenResponse = new BearerTokenResponse
         {
             Token = new Faker().Lorem.Paragraph()
@@ -55,7 +55,7 @@ public class AuthControllerTest
         await _userService.Received().GetUserByEmailAndPasswordAsync(Arg.Any<AuthLoginRequest>());
         _jwtService.Received().GenerateToken(Arg.Any<AuthUserResponse>());
     }
-    
+
     [Fact]
     public async Task AuthLoginUnauthorized()
     {
@@ -66,7 +66,7 @@ public class AuthControllerTest
             Email = response.Email,
             Password = response.Password
         };
-        
+
         var bearerTokenResponse = new BearerTokenResponse
         {
             Token = new Faker().Lorem.Paragraph()
@@ -80,5 +80,16 @@ public class AuthControllerTest
         result.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         await _userService.Received().GetUserByEmailAndPasswordAsync(Arg.Any<AuthLoginRequest>());
         _jwtService.DidNotReceive().GenerateToken(Arg.Any<AuthUserResponse>());
+    }
+
+    [Fact]
+    public async Task RestartDefaultUserOk()
+    {
+        var user = new UserResponseDummie().Generate();
+        _userService.CreateOrUpdateUserDefault().Returns(user);
+        var result = (ObjectResult) await _authController.RestartDefaultUser();
+
+        result.StatusCode.Should().Be(StatusCodes.Status200OK);
+        await _userService.Received().CreateOrUpdateUserDefault();
     }
 }

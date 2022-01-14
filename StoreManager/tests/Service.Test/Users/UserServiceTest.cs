@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Application.Users;
 using AutoMapper;
 using Bogus;
 using Core.Auth.Models;
+using Core.Errors;
 using Core.Users;
 using Core.Users.Interfaces;
 using Core.Users.Mappings;
@@ -15,7 +15,6 @@ using Dummie.Test.Users;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
 using Xunit;
 
@@ -25,8 +24,8 @@ public class UserServiceTest
 {
     private readonly IUserRepository _userRepository;
     private readonly UserService _userService;
-    private readonly IConfiguration _configuration;
     private readonly IRoleRepository _roleRepository;
+    private readonly IMapper _mapper;
 
     public UserServiceTest()
     {
@@ -39,17 +38,19 @@ public class UserServiceTest
             cfg.AddProfile(new RoleMappingProfile());
         });
 
-        var mapper = mockMapper.CreateMapper();
+        _mapper = mockMapper.CreateMapper();
         var myConfigurations = new Dictionary<string, string>
         {
-            {"AuthSettings:JwtSecret", "ASDasdasda"}
+            {"AuthSettings:JwtSecret", "ASDasdasda"},
+            {"AuthSettings:DefaultUserPassword", "123456"},
+            {"AuthSettings:DefaulUserEmail", "teste@hotmail.com"},
         };
 
-        _configuration = new ConfigurationBuilder()
+        IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(myConfigurations)
             .Build();
 
-        _userService = new UserService(_userRepository, _roleRepository, mapper, _configuration);
+        _userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
     }
 
     [Fact]
@@ -72,13 +73,13 @@ public class UserServiceTest
         };
 
         _roleRepository.CheckIfRoleExist(Arg.Any<int>()).Returns(true);
-        _userRepository.CreateUser(Arg.Any<User>()).Returns(user);
+        _userRepository.CreateUserAsync(Arg.Any<User>()).Returns(user);
 
         var result = await _userService.InsertUserAsync(userRequest);
 
         result.Should().NotBeNull();
         await _roleRepository.Received().CheckIfRoleExist(Arg.Any<int>());
-        await _userRepository.Received().CreateUser(Arg.Any<User>());
+        await _userRepository.Received().CreateUserAsync(Arg.Any<User>());
     }
 
     [Fact]
@@ -101,11 +102,11 @@ public class UserServiceTest
         };
 
         _roleRepository.CheckIfRoleExist(Arg.Any<int>()).Returns(false);
-        _userRepository.CreateUser(Arg.Any<User>()).Returns(user);
+        _userRepository.CreateUserAsync(Arg.Any<User>()).Returns(user);
 
         await Assert.ThrowsAsync<Exception>(() => _userService.InsertUserAsync(userRequest));
         await _roleRepository.Received().CheckIfRoleExist(Arg.Any<int>());
-        await _userRepository.DidNotReceive().CreateUser(Arg.Any<User>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
     }
 
     [Fact]
@@ -128,13 +129,13 @@ public class UserServiceTest
         };
 
         _roleRepository.CheckIfRoleExist(Arg.Any<int>()).Returns(true);
-        _userRepository.UpdateUser(Arg.Any<User>()).Returns(user);
+        _userRepository.UpdateUserAsync(Arg.Any<User>()).Returns(user);
 
         var result = await _userService.UpdatedUserAsync(userUpdateRequest);
 
         result.Should().NotBeNull();
         await _roleRepository.Received().CheckIfRoleExist(Arg.Any<int>());
-        await _userRepository.Received().UpdateUser(Arg.Any<User>());
+        await _userRepository.Received().UpdateUserAsync(Arg.Any<User>());
     }
 
     [Fact]
@@ -157,42 +158,42 @@ public class UserServiceTest
         };
 
         _roleRepository.CheckIfRoleExist(Arg.Any<int>()).Returns(false);
-        _userRepository.UpdateUser(Arg.Any<User>()).Returns(user);
+        _userRepository.UpdateUserAsync(Arg.Any<User>()).Returns(user);
 
         await Assert.ThrowsAsync<Exception>(() => _userService.UpdatedUserAsync(userUpdateRequest));
         await _roleRepository.Received().CheckIfRoleExist(Arg.Any<int>());
-        await _userRepository.DidNotReceive().CreateUser(Arg.Any<User>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
     }
 
     [Fact]
     public async Task GetUserOk()
     {
         var user = new UserDummie().Generate();
-        _userRepository.GetUser(Arg.Any<int>()).Returns(user);
+        _userRepository.GetUserAsync(Arg.Any<int>()).Returns(user);
 
         var result = await _userService.GetUserAsync(user.Id);
 
         result.Should().NotBeNull();
-        await _userRepository.Received().GetUser(Arg.Any<int>());
+        await _userRepository.Received().GetUserAsync(Arg.Any<int>());
     }
 
     [Fact]
     public async Task GetUsersOk()
     {
         var users = new UserDummie().Generate(new Random().Next(1, 100));
-        _userRepository.GetUsers().Returns(users);
+        _userRepository.GetUsersAsync().Returns(users);
 
         var result = await _userService.GetUsersAsync();
 
         result.Should().NotBeNull();
-        await _userRepository.Received().GetUsers();
+        await _userRepository.Received().GetUsersAsync();
     }
 
     [Fact]
     public async Task GetUserByEmailAndPasswordOk()
     {
         var user = new UserDummie().Generate();
-        _userRepository.GetUserByEmailAndPassword(Arg.Any<string>(), Arg.Any<string>()).Returns(user);
+        _userRepository.GetUserByEmailAndPasswordAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(user);
 
         var authLoginRequest = new AuthLoginRequest
         {
@@ -203,14 +204,14 @@ public class UserServiceTest
         var result = await _userService.GetUserByEmailAndPasswordAsync(authLoginRequest);
 
         result.Password.Should().BeEmpty();
-        await _userRepository.Received().GetUserByEmailAndPassword(Arg.Any<string>(), Arg.Any<string>());
+        await _userRepository.Received().GetUserByEmailAndPasswordAsync(Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Fact]
     public async Task GetUserByEmailAndPasswordException()
     {
         var user = new UserDummie().Generate();
-        _userRepository.GetUserByEmailAndPassword(Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
+        _userRepository.GetUserByEmailAndPasswordAsync(Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
 
         var authLoginRequest = new AuthLoginRequest
         {
@@ -220,7 +221,73 @@ public class UserServiceTest
 
         await Assert.ThrowsAsync<AuthenticationException>(() =>
             _userService.GetUserByEmailAndPasswordAsync(authLoginRequest));
+
+        await _userRepository.Received().GetUserByEmailAndPasswordAsync(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task CreateUserDefaultOk()
+    {
+        var role = new RoleDummie().Generate();
+        var user = new UserDummie(role).Generate();
+        var expectedResult = _mapper.Map<UserResponse>(user);
+
+        _roleRepository.CreateRoleAsync(Arg.Any<Role>()).Returns(role);
+        _userRepository.CreateUserAsync(Arg.Any<User>()).Returns(user);
+
+        var result = await _userService.CreateOrUpdateUserDefault();
+
+        await _roleRepository.Received().CreateRoleAsync(Arg.Any<Role>());
+        await _userRepository.Received().CreateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().UpdateUserAsync(Arg.Any<User>());
+
+        expectedResult.Password = "";
+        result.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Fact]
+    public async Task UpdateUserDefaultOk()
+    {
+        var role = new RoleDummie().Generate();
+        var user = new UserDummie(role).Generate();
+        var expectedResult = _mapper.Map<UserResponse>(user);
+
+        _userRepository.GetUserByEmailAsync(Arg.Any<string>()).Returns(user);
+        _userRepository.ChangeUserPasswordAsync(Arg.Any<User>()).Returns(user);
+        _userRepository.UpdateUserAsync(Arg.Any<User>()).Returns(user);
+
+        var result = await _userService.CreateOrUpdateUserDefault();
+
+        await _roleRepository.DidNotReceive().CreateRoleAsync(Arg.Any<Role>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
+        await _userRepository.Received().GetUserByEmailAsync(Arg.Any<string>());
+        await _userRepository.Received().UpdateUserAsync(Arg.Any<User>());
+        await _userRepository.Received().ChangeUserPasswordAsync(Arg.Any<User>());
+
+        expectedResult.Password = "";
+        result.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateUserDefaultWithException()
+    {
+        var myConfigurations = new Dictionary<string, string>
+        {
+            {"AuthSettings:JwtSecret", "ASDasdasda"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(myConfigurations)
+            .Build();
+
+        var userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
+
+        await Assert.ThrowsAsync<EnvironmentVariableNotFoundException>(() => userService.CreateOrUpdateUserDefault());
         
-        await _userRepository.Received().GetUserByEmailAndPassword(Arg.Any<string>(), Arg.Any<string>());
+        await _roleRepository.DidNotReceive().CreateRoleAsync(Arg.Any<Role>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().GetUserByEmailAsync(Arg.Any<string>());
+        await _userRepository.DidNotReceive().UpdateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().ChangeUserPasswordAsync(Arg.Any<User>());
     }
 }

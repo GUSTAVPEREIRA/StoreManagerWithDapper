@@ -38,7 +38,7 @@ namespace Application.Users
 
             user.Disabled = false;
             user.Password = EncryptPassword(user.Password);
-            user = await _userRepository.CreateUser(user);
+            user = await _userRepository.CreateUserAsync(user);
 
             return _mapper.Map<UserResponse>(user);
         }
@@ -48,14 +48,14 @@ namespace Application.Users
             await CheckRoleExists(updatedRequest.RoleId);
             var user = _mapper.Map<User>(updatedRequest);
 
-            user = await _userRepository.UpdateUser(user);
+            user = await _userRepository.UpdateUserAsync(user);
 
             return _mapper.Map<UserResponse>(user);
         }
 
         public async Task<UserResponse> GetUserAsync(int id)
         {
-            var user = await _userRepository.GetUser(id);
+            var user = await _userRepository.GetUserAsync(id);
 
             var userResponse = _mapper.Map<UserResponse>(user);
 
@@ -64,7 +64,7 @@ namespace Application.Users
 
         public async Task<IEnumerable<UserResponse>> GetUsersAsync()
         {
-            var users = await _userRepository.GetUsers();
+            var users = await _userRepository.GetUsersAsync();
             var usersResponse = _mapper.Map<IEnumerable<UserResponse>>(users);
 
             return usersResponse;
@@ -73,7 +73,7 @@ namespace Application.Users
         public async Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(AuthLoginRequest loginRequest)
         {
             loginRequest.Password = EncryptPassword(loginRequest.Password);
-            var user = await _userRepository.GetUserByEmailAndPassword(loginRequest.Email, loginRequest.Password);
+            var user = await _userRepository.GetUserByEmailAndPasswordAsync(loginRequest.Email, loginRequest.Password);
 
             if (user == null)
             {
@@ -125,7 +125,7 @@ namespace Application.Users
 
         private async Task<User> UpdateDefaultUser(Setting settings)
         {
-            var user = await _userRepository.GetUserByEmail(settings.AuthSettings.DefaulUserEmail);
+            var user = await _userRepository.GetUserByEmailAsync(settings.AuthSettings.DefaulUserEmail);
 
             if (user == null)
             {
@@ -133,8 +133,8 @@ namespace Application.Users
             }
 
             user.Password = EncryptPassword(settings.AuthSettings.DefaultUserPassword);
-            await _userRepository.UpdateUser(user);
-            await _userRepository.ChangeUserPassword(user);
+            await _userRepository.UpdateUserAsync(user);
+            await _userRepository.ChangeUserPasswordAsync(user);
 
             return user;
         }
@@ -156,7 +156,7 @@ namespace Application.Users
 
             user.Role = await _roleRepository.CreateRoleAsync(user.Role);
 
-            return await _userRepository.CreateUser(user);
+            return await _userRepository.CreateUserAsync(user);
         }
     }
 }

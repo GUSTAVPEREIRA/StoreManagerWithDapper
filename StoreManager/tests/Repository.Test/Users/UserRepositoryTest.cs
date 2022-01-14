@@ -40,7 +40,7 @@ namespace Repository.Test.Users
             var role = await _roleSeeder.CreateRoles(1);
             user.Role = role.FirstOrDefault();
 
-            var result = await _userRepository.CreateUser(user);
+            var result = await _userRepository.CreateUserAsync(user);
             user.Id = result.Id;
 
             user.Should().BeEquivalentTo(result);
@@ -56,8 +56,8 @@ namespace Repository.Test.Users
 
             var updatedUser = new UserDummie(user.Role).Generate();
             updatedUser.Id = user.Id;
-            await _userRepository.UpdateUser(updatedUser);
-            user = await _userRepository.GetUser(user.Id);
+            await _userRepository.UpdateUserAsync(updatedUser);
+            user = await _userRepository.GetUserAsync(user.Id);
 
             user.Password = updatedUser.Password;
             user.Should().BeEquivalentTo(updatedUser);
@@ -70,7 +70,7 @@ namespace Repository.Test.Users
             var user = users.FirstOrDefault();
             Assert.True(user != null);
 
-            var result = await _userRepository.GetUser(user.Id);
+            var result = await _userRepository.GetUserAsync(user.Id);
 
             user.Should().BeEquivalentTo(result);
         }
@@ -81,7 +81,7 @@ namespace Repository.Test.Users
             var count = new Random().Next(1, 100);
             var users = await _userSeeder.CreateUsers(count);
 
-            var result = await _userRepository.GetUsers();
+            var result = await _userRepository.GetUsersAsync();
 
             users.Should().BeEquivalentTo(result);
         }
@@ -92,9 +92,21 @@ namespace Repository.Test.Users
             var users = await _userSeeder.CreateUsers(1);
             var user = users.First();
 
-            var result = await _userRepository.GetUserByEmailAndPassword(user.Email, user.Password);
+            var result = await _userRepository.GetUserByEmailAndPasswordAsync(user.Email, user.Password);
             user.Password = null;
             user.Should().BeEquivalentTo(result);
+        }
+
+        [Fact]
+        public async Task ChangePasswordOk()
+        {
+            var users = await _userSeeder.CreateUsers(1);
+            var user = users.First();
+            
+            user.Password = "123456";
+            var result = await _userRepository.ChangeUserPasswordAsync(user);
+
+            result.Should().BeEquivalentTo(user);
         }
 
         public void Dispose()

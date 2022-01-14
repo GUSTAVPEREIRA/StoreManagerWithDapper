@@ -40,7 +40,7 @@ namespace Repository.Test.Seeders
         {
             foreach (var user in users)
             {
-                await _userRepository.CreateUser(user);
+                await _userRepository.CreateUserAsync(user);
             }
         }
     }
