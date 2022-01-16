@@ -21,10 +21,5 @@ namespace Repository.Test.Configuration
 
             return configuration;
         }
-
-        public void AdConfiguration(string key, string configuration)
-        {
-            _configurations.Add(key, configuration);
-        }
     }
 }

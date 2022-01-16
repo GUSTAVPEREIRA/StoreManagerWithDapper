@@ -15,7 +15,7 @@ namespace Controller.Test.Users
     {
         private readonly IUserService _userService;
         private readonly UserController _userController;
-        
+
         public UserControllerTest()
         {
             _userService = Substitute.For<IUserService>();
@@ -31,7 +31,7 @@ namespace Controller.Test.Users
 
             _userService.InsertUserAsync(Arg.Any<UserRequest>()).Returns(userResponse);
             var result = (ObjectResult) await _userController.InsertUser(userDummie);
-            
+
             result.StatusCode.Should().Be(StatusCodes.Status201Created);
             await _userService.Received().InsertUserAsync(Arg.Any<UserRequest>());
         }

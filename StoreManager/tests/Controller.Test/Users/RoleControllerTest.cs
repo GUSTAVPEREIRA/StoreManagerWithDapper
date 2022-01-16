@@ -5,6 +5,7 @@ using Core.Users.Interfaces;
 using Core.Users.Models;
 using Dummie.Test.Users;
 using FluentAssertions;
+using FluentValidation.TestHelper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -93,6 +94,43 @@ namespace Controller.Test.Users
 
             await _roleService.Received().DeleteRoleAsync(Arg.Any<int>());
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+        }
+
+        [Fact]
+        public void ValidationRoleRequestWithoutError()
+        {
+            var roleRequest = new RoleRequestDummie().Generate();
+            var result = new RoleRequestValidation().TestValidate(roleRequest);
+            result.ShouldNotHaveValidationErrorFor(x => x.Name);
+        }
+        
+        [Fact]
+        public void ValidationRoleRequestWithError()
+        {
+            var roleRequest = new RoleRequestDummie().Generate();
+            roleRequest.Name = "";
+            var result = new RoleRequestValidation().TestValidate(roleRequest);
+            result.ShouldHaveValidationErrorFor(x => x.Name);
+        }
+
+        [Fact]
+        public void ValidationRoleUpdatedRequestWithoutError()
+        {
+            var roleUpdatedRequest = new RoleRequestUpdatedDummie().Generate();
+            var result = new RoleUpdatedRequestValidation().TestValidate(roleUpdatedRequest);
+            
+            result.ShouldNotHaveValidationErrorFor(x => x.Id);
+            result.ShouldNotHaveValidationErrorFor(x => x.Name);
+        }
+        
+        [Fact]
+        public void ValidationRoleUpdatedRequestWithError()
+        {
+            var roleUpdatedRequest = new RoleUpdatedRequest();
+            var result = new RoleUpdatedRequestValidation().TestValidate(roleUpdatedRequest);
+            
+            result.ShouldHaveValidationErrorFor(x => x.Id);
+            result.ShouldHaveValidationErrorFor(x => x.Name);
         }
     }
 }

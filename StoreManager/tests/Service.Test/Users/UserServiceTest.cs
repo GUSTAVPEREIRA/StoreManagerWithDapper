@@ -246,6 +246,29 @@ public class UserServiceTest
     }
 
     [Fact]
+    public async Task CreateUserDefaultWithException()
+    {
+        var myConfigurations = new Dictionary<string, string>
+        {
+            {"AuthSettings:JwtSecret", ""},
+            {"AuthSettings:DefaultUserPassword", "123456"},
+            {"AuthSettings:DefaulUserEmail", "asdhasdhua@gmail.com"},
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(myConfigurations)
+            .Build();
+
+        var userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
+
+        await Assert.ThrowsAsync<EnvironmentVariableNotFoundException>(() => userService.CreateOrUpdateUserDefault());
+
+        await _roleRepository.DidNotReceive().CreateRoleAsync(Arg.Any<Role>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().UpdateUserAsync(Arg.Any<User>());
+    }
+
+    [Fact]
     public async Task UpdateUserDefaultOk()
     {
         var role = new RoleDummie().Generate();
@@ -269,6 +292,35 @@ public class UserServiceTest
     }
 
     [Fact]
+    public async Task UpdateUserDefaultWithException()
+    {
+        var myConfigurations = new Dictionary<string, string>
+        {
+            {"AuthSettings:JwtSecret", ""},
+            {"AuthSettings:DefaultUserPassword", "123456"},
+            {"AuthSettings:DefaulUserEmail", "asdhasdhua@gmail.com"},
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(myConfigurations)
+            .Build();
+
+        var userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
+        var role = new RoleDummie().Generate();
+        var user = new UserDummie(role).Generate();
+
+        _userRepository.GetUserByEmailAsync(Arg.Any<string>()).Returns(user);
+
+        await Assert.ThrowsAsync<EnvironmentVariableNotFoundException>(() => userService.CreateOrUpdateUserDefault());
+
+        await _userRepository.Received().GetUserByEmailAsync(Arg.Any<string>());
+        await _roleRepository.DidNotReceive().CreateRoleAsync(Arg.Any<Role>());
+        await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().UpdateUserAsync(Arg.Any<User>());
+        await _userRepository.DidNotReceive().ChangeUserPasswordAsync(Arg.Any<User>());
+    }
+
+    [Fact]
     public async Task CreateOrUpdateUserDefaultWithException()
     {
         var myConfigurations = new Dictionary<string, string>
@@ -283,7 +335,7 @@ public class UserServiceTest
         var userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
 
         await Assert.ThrowsAsync<EnvironmentVariableNotFoundException>(() => userService.CreateOrUpdateUserDefault());
-        
+
         await _roleRepository.DidNotReceive().CreateRoleAsync(Arg.Any<Role>());
         await _userRepository.DidNotReceive().CreateUserAsync(Arg.Any<User>());
         await _userRepository.DidNotReceive().GetUserByEmailAsync(Arg.Any<string>());

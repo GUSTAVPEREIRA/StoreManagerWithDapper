@@ -6,6 +6,7 @@ using System.Text;
 using Core.Auth.Interfaces;
 using Core.Auth.Models;
 using Core.Configurations.Extensions;
+using Core.Errors;
 using Core.Users.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -25,8 +26,15 @@ namespace Application.Auth
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var settings = _configuration.GetSettings();
-            var key = Encoding.ASCII.GetBytes(settings.AuthSettings.JwtSecret);
+            var jwtSecret = settings.AuthSettings.JwtSecret;
             var expireTime = Convert.ToInt32(settings.AuthSettings.JwtExpireTimesInMinuts);
+
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                throw new EnvironmentVariableNotFoundException(nameof(jwtSecret));
+            }
+            
+            var key = Encoding.ASCII.GetBytes(jwtSecret);
             var claims = GenerateClaims(user);
 
             var tokenDescriptor = new SecurityTokenDescriptor

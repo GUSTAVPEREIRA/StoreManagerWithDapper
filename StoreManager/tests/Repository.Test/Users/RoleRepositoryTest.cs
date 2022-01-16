@@ -106,6 +106,30 @@ namespace Repository.Test.Users
 
             result.Should().BeNull();
         }
+
+        [Fact]
+        public async Task CheckIfRoleExisting()
+        {
+            var count = new Random().Next(1, 10);
+            var roles = await _seeder.CreateRoles(count);
+            var role = roles.First(x => x.Id == count);
+            
+            var result = await _roleRepository.CheckIfRoleExist(role.Id);
+
+            result.Should().Be(true);
+        }
+        
+        [Fact]
+        public async Task CheckIfRoleIsntExisting()
+        {
+            var count = new Random().Next(1, 10);
+            var roles = await _seeder.CreateRoles(count);
+            var role = roles.First(x => x.Id == count);
+            
+            var result = await _roleRepository.CheckIfRoleExist(role.Id + 1);
+
+            result.Should().Be(false);
+        }
         
         public void Dispose()
         {

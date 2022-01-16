@@ -96,6 +96,29 @@ namespace Repository.Test.Users
             user.Password = null;
             user.Should().BeEquivalentTo(result);
         }
+        
+        [Fact]
+        public async Task GetUsersByEmail()
+        {
+            var users = await _userSeeder.CreateUsers(1);
+            var user = users.First();
+
+            var result = await _userRepository.GetUserByEmailAsync(user.Email);
+
+            user.Should().BeEquivalentTo(result);
+        }
+        
+        [Fact]
+        public async Task GetUsersByEmailNotFound()
+        {
+            var users = await _userSeeder.CreateUsers(1);
+            var user = users.First();
+
+            var result = await _userRepository.GetUserByEmailAsync(user.Email + "asd56as54d");
+
+            result.Should().BeNull();
+        }
+
 
         [Fact]
         public async Task ChangePasswordOk()
