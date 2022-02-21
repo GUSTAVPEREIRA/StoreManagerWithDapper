@@ -9,7 +9,8 @@ namespace Infrastructure.Migrations
             var assemblies = new[]
             {
                 typeof(CreateRoleTable).Assembly,
-                typeof(CreateUserTable).Assembly
+                typeof(CreateUserTable).Assembly,
+                typeof(CreateProductsTable).Assembly
             };
 
             return assemblies;

@@ -13,7 +13,8 @@ namespace Infrastructure.Migrations
                 .WithColumn("password").AsString()
                 .WithColumn("disabled").AsBoolean()
                 .WithColumn("full_name").AsString(255).NotNullable()
-                .WithColumn("role_id").AsInt32().ForeignKey("roles", "id").NotNullable();
+                .WithColumn("role_id").AsInt32()
+                .ForeignKey("roles", "id").NotNullable();
         }
 
         public override void Down()
