@@ -1,9 +1,8 @@
 using System;
 
-namespace Core.Errors.Interfaces
+namespace Core.Errors.Interfaces;
+
+public interface IExceptionHandler
 {
-    public interface IExceptionHandler
-    {
-        public Error HandleException(Exception exception);
-    }
+    public Error HandleException(Exception exception);
 }

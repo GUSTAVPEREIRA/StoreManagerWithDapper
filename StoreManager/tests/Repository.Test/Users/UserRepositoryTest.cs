@@ -1,13 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Core.Users.Interfaces;
 using Dummie.Test.Users;
 using FluentAssertions;
 using Infrastructure.Users;
-using NSubstitute.ExceptionExtensions;
 using Repository.Test.Configuration;
 using Repository.Test.Seeders;
 using Xunit;

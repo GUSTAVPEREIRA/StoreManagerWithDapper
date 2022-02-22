@@ -1,9 +1,8 @@
 using System.Data.Common;
 
-namespace Infrastructure.Providers
+namespace Infrastructure.Providers;
+
+public interface IDbConnectionProvider
 {
-    public interface IDbConnectionProvider
-    {
-        public DbConnection GetDbConnection(string connection);
-    }
+    public DbConnection GetDbConnection(string connection);
 }

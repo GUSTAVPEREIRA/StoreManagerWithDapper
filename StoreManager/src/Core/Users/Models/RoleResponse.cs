@@ -1,7 +1,6 @@
-namespace Core.Users.Models
+namespace Core.Users.Models;
+
+public class RoleResponse : RoleRequest
 {
-    public class RoleResponse : RoleRequest
-    {
-        public int Id { get; set; }
-    }
+    public int Id { get; set; }
 }

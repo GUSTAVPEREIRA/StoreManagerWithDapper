@@ -1,25 +1,24 @@
 using AutoMapper;
 using Core.Users.Models;
 
-namespace Core.Users.Mappings
+namespace Core.Users.Mappings;
+
+public class UserMappingProfile : Profile
 {
-    public class UserMappingProfile : Profile
+    public UserMappingProfile()
     {
-        public UserMappingProfile()
+        CreateMap<UserRequest, User>().BeforeMap((userRequest, user) =>
         {
-            CreateMap<UserRequest, User>().BeforeMap((userRequest, user) =>
+            if (userRequest.RoleId != 0)
             {
-                if (userRequest.RoleId != 0)
+                user.Role = new Role
                 {
-                    user.Role = new Role
-                    {
-                        Id = userRequest.RoleId
-                    };
-                }
-            });
-            CreateMap<UserUpdatedRequest, User>();
-            CreateMap<User, UserResponse>().ReverseMap();
-            CreateMap<User, AuthUserResponse>();
-        }
+                    Id = userRequest.RoleId
+                };
+            }
+        });
+        CreateMap<UserUpdatedRequest, User>();
+        CreateMap<User, UserResponse>().ReverseMap();
+        CreateMap<User, AuthUserResponse>();
     }
 }

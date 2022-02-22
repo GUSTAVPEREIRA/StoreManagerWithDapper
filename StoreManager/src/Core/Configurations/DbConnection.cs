@@ -1,7 +1,6 @@
-namespace Core.Configurations
+namespace Core.Configurations;
+
+public class DbConnection
 {
-    public class DbConnection
-    {
-        public string PostgresConnection { get; set; }
-    }
+    public string PostgresConnection { get; set; }
 }

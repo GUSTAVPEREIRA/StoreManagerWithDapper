@@ -1,10 +1,9 @@
 using Core.Auth.Models;
 using Core.Users.Models;
 
-namespace Core.Auth.Interfaces
+namespace Core.Auth.Interfaces;
+
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        public BearerTokenResponse GenerateToken(AuthUserResponse user);
-    }
+    public BearerTokenResponse GenerateToken(AuthUserResponse user);
 }

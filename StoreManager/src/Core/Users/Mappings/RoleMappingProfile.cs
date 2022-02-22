@@ -1,15 +1,14 @@
 using AutoMapper;
 using Core.Users.Models;
 
-namespace Core.Users.Mappings
+namespace Core.Users.Mappings;
+
+public class RoleMappingProfile : Profile
 {
-    public class RoleMappingProfile : Profile
+    public RoleMappingProfile()
     {
-        public RoleMappingProfile()
-        {
-            CreateMap<RoleRequest, Role>().ReverseMap();
-            CreateMap<RoleUpdatedRequest, Role>().ReverseMap();
-            CreateMap<Role, RoleResponse>();
-        }
+        CreateMap<RoleRequest, Role>().ReverseMap();
+        CreateMap<RoleUpdatedRequest, Role>().ReverseMap();
+        CreateMap<Role, RoleResponse>();
     }
 }

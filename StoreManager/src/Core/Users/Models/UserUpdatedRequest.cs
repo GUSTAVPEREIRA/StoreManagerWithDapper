@@ -1,8 +1,7 @@
-namespace Core.Users.Models
+namespace Core.Users.Models;
+
+public class UserUpdatedRequest : UserRequest
 {
-    public class UserUpdatedRequest : UserRequest
-    {
-        public int Id { get; set; }
-        public bool Disabled { get; set; }
-    }
+    public int Id { get; set; }
+    public bool Disabled { get; set; }
 }

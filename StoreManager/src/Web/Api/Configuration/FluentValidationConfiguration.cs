@@ -7,29 +7,28 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Api.Configuration
+namespace Api.Configuration;
+
+public static class FluentValidationConfiguration
 {
-    public static class FluentValidationConfiguration
+    public static void AddFluentValidationConfiguration(this IServiceCollection service)
     {
-        public static void AddFluentValidationConfiguration(this IServiceCollection service)
-        {
-            service.AddControllers(options =>
-                {
-                    options.Filters.Add(new GlobalExceptionMiddleware()); 
+        service.AddControllers(options =>
+            {
+                options.Filters.Add(new GlobalExceptionMiddleware()); 
                     
-                })
-                .AddNewtonsoftJson(x =>
-                {
-                    x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                    x.SerializerSettings.Converters.Add(new StringEnumConverter());
-                })
-                .AddJsonOptions(x => { x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); })
-                .AddFluentValidation(x =>
-                {
-                    x.RegisterValidatorsFromAssemblyContaining<RoleRequestValidation>();
-                    x.RegisterValidatorsFromAssemblyContaining<RoleUpdatedRequestValidation>();
-                    x.ValidatorOptions.LanguageManager.Culture = new CultureInfo("pt-BR");
-                });
-        }
+            })
+            .AddNewtonsoftJson(x =>
+            {
+                x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                x.SerializerSettings.Converters.Add(new StringEnumConverter());
+            })
+            .AddJsonOptions(x => { x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); })
+            .AddFluentValidation(x =>
+            {
+                x.RegisterValidatorsFromAssemblyContaining<RoleRequestValidation>();
+                x.RegisterValidatorsFromAssemblyContaining<RoleUpdatedRequestValidation>();
+                x.ValidatorOptions.LanguageManager.Culture = new CultureInfo("pt-BR");
+            });
     }
 }

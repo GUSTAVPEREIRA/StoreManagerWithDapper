@@ -1,4 +1,3 @@
-using System;
 using FluentMigrator;
 
 namespace Infrastructure.Migrations;
@@ -52,11 +51,11 @@ public class CreateProductsTable : Migration
 
     public override void Down()
     {
-        Delete.Table("");
-        Delete.Table("");
-        Delete.Table("");
-        Delete.Table("");
-        Delete.Table("");
-        Delete.Table("");
+        Delete.Table("categories");
+        Delete.Table("products");
+        Delete.Table("variants");
+        Delete.Table("variant_values");
+        Delete.Table("product_variants");
+        Delete.Table("product_details");
     }
 }

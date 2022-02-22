@@ -8,82 +8,81 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Users
+namespace Api.Users;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UserController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    private readonly IUserService _userService;
+
+    public UserController(IUserService userService)
     {
-        private readonly IUserService _userService;
+        _userService = userService;
+    }
 
-        public UserController(IUserService userService)
+    [HttpPost]
+    [Route("Create")]
+    [Authorize(Roles = "IsAdmin")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> InsertUser(UserRequest request)
+    {
+        try
         {
-            _userService = userService;
-        }
+            var user = await _userService.InsertUserAsync(request);
 
-        [HttpPost]
-        [Route("Create")]
-        [Authorize(Roles = "IsAdmin")]
-        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> InsertUser(UserRequest request)
+            return CreatedAtAction(nameof(GetUser), new {id = user.Id}, user);
+        }
+        catch (EnvironmentVariableNotFoundException ex)
         {
-            try
-            {
-                var user = await _userService.InsertUserAsync(request);
-
-                return CreatedAtAction(nameof(GetUser), new {id = user.Id}, user);
-            }
-            catch (EnvironmentVariableNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
-            }
+            return NotFound(ex.Message);
         }
-
-        [HttpGet]
-        [Route("Get/{id:int}")]
-        [Authorize]
-        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> GetUser(int id)
+        catch (Exception ex)
         {
-            var user = await _userService.GetUserAsync(id);
-
-            return Ok(user);
+            return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
         }
+    }
 
-        [HttpGet]
-        [Route("List")]
-        [Authorize]
-        [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> GetUsers()
-        {
-            var users = await _userService.GetUsersAsync();
+    [HttpGet]
+    [Route("Get/{id:int}")]
+    [Authorize]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> GetUser(int id)
+    {
+        var user = await _userService.GetUserAsync(id);
 
-            return Ok(users);
-        }
+        return Ok(user);
+    }
 
-        [HttpPut]
-        [Route("Update")]
-        [Authorize(Roles = "IsAdmin")]
-        [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UpdateUser(UserUpdatedRequest request)
-        {
-            var user = await _userService.UpdatedUserAsync(request);
+    [HttpGet]
+    [Route("List")]
+    [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> GetUsers()
+    {
+        var users = await _userService.GetUsersAsync();
 
-            return Ok(user);
-        }
+        return Ok(users);
+    }
+
+    [HttpPut]
+    [Route("Update")]
+    [Authorize(Roles = "IsAdmin")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> UpdateUser(UserUpdatedRequest request)
+    {
+        var user = await _userService.UpdatedUserAsync(request);
+
+        return Ok(user);
     }
 }

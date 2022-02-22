@@ -5,39 +5,38 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Api
+namespace Api;
+
+public class Startup
 {
-    public class Startup
+    public Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
+        Configuration = configuration;
+    }
+
+    private IConfiguration Configuration { get; }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSwagger();
+        services.AddMigrations(Configuration);
+        services.AddAuthConfiguration(Configuration);
+        services.AddDependencyInjection();
+        services.AddAutoMapper();
+        services.AddFluentValidationConfiguration();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
         {
-            Configuration = configuration;
+            app.UseDeveloperExceptionPage();
         }
 
-        private IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSwagger();
-            services.AddMigrations(Configuration);
-            services.AddAuthConfiguration(Configuration);
-            services.AddDependencyInjection();
-            services.AddAutoMapper();
-            services.AddFluentValidationConfiguration();
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseSwaggerConfiguration();
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthConfiguration();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-        }
+        app.UseSwaggerConfiguration();
+        app.UseHttpsRedirection();
+        app.UseRouting();
+        app.UseAuthConfiguration();
+        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
     }
 }

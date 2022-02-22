@@ -1,4 +1,3 @@
-
 using System.Text;
 using Core.Configurations.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Configuration;
 
-public static class AuthConfiguration 
+public static class AuthConfiguration
 {
     public static void AddAuthConfiguration(this IServiceCollection service, IConfiguration configuration)
     {

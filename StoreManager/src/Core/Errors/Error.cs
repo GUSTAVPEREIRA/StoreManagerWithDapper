@@ -1,19 +1,18 @@
-namespace Core.Errors
+namespace Core.Errors;
+
+public class Error
 {
-    public class Error
+    public string Message { get; set; }
+    public int StatusCode { get; set; }
+
+    public Error(int statusCodes, string message)
     {
-        public string Message { get; set; }
-        public int StatusCode { get; set; }
+        StatusCode = statusCodes;
+        Message = message;
+    }
 
-        public Error(int statusCodes, string message)
-        {
-            StatusCode = statusCodes;
-            Message = message;
-        }
-
-        public Error()
-        {
+    public Error()
+    {
             
-        }
     }
 }

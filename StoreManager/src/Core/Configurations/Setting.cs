@@ -1,8 +1,7 @@
-namespace Core.Configurations
+namespace Core.Configurations;
+
+public class Setting
 {
-    public class Setting
-    {
-        public DbConnection DbConnection { get; set; }
-        public AuthSettings AuthSettings { get; set; }
-    }
+    public DbConnection DbConnection { get; set; }
+    public AuthSettings AuthSettings { get; set; }
 }
