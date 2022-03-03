@@ -11,18 +11,18 @@ namespace Repository.Test.Configuration
         {
             var connectionString = GetConnectionString(database);
             var service = CreateServiceProvider(connectionString);
-            
+
             using var scope = service.CreateScope();
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
             runner.MigrateUp();
         }
-        
+
         public static void RemoveMigrations(string database)
         {
             var connectionString = GetConnectionString(database);
             var service = CreateServiceProvider(connectionString);
-            
+
             using var scope = service.CreateScope();
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
