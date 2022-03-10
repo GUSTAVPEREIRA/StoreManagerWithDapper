@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Core.Users;
 using Core.Users.Interfaces;
 using Dummie.Test.Users;
+using Infrastructure.Users.Models;
 
 namespace Repository.Test.Seeders
 {

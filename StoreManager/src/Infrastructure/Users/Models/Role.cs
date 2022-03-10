@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Core.Users;
+namespace Infrastructure.Users.Models;
 
 public class Role
 {

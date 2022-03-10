@@ -1,7 +1,7 @@
-using Core.Users.Mappings;
+using Infrastructure.Users.Mappings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Api.Configuration;
+namespace Infrastructure.Configurations;
 
 public static class AutoMapperConfiguration
 {

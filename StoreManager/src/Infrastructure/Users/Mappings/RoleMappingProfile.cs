@@ -1,7 +1,8 @@
 using AutoMapper;
 using Core.Users.Models;
+using Infrastructure.Users.Models;
 
-namespace Core.Users.Mappings;
+namespace Infrastructure.Users.Mappings;
 
 public class RoleMappingProfile : Profile
 {

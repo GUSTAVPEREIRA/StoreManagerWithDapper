@@ -81,8 +81,8 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> UpdateUser(UserUpdatedRequest request)
     {
-        var user = await _userService.UpdatedUserAsync(request);
-
-        return Ok(user);
+        var userResponse = await _userService.UpdatedUserAsync(request);
+        
+        return Ok(userResponse);
     }
 }

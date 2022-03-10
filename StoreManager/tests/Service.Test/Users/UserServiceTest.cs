@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Application.Users;
-using AutoMapper;
 using Bogus;
 using Core.Auth.Models;
 using Core.Errors;
-using Core.Users;
 using Core.Users.Interfaces;
-using Core.Users.Mappings;
 using Core.Users.Models;
 using Dummie.Test.Users;
 using FluentAssertions;
@@ -25,20 +22,12 @@ public class UserServiceTest
     private readonly IUserRepository _userRepository;
     private readonly UserService _userService;
     private readonly IRoleRepository _roleRepository;
-    private readonly IMapper _mapper;
 
     public UserServiceTest()
     {
         _userRepository = Substitute.For<IUserRepository>();
         _roleRepository = Substitute.For<IRoleRepository>();
-
-        var mockMapper = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(new UserMappingProfile());
-            cfg.AddProfile(new RoleMappingProfile());
-        });
-
-        _mapper = mockMapper.CreateMapper();
+        
         var myConfigurations = new Dictionary<string, string>
         {
             {"AuthSettings:JwtSecret", "ASDasdasda"},
@@ -50,7 +39,7 @@ public class UserServiceTest
             .AddInMemoryCollection(myConfigurations)
             .Build();
 
-        _userService = new UserService(_userRepository, _roleRepository, _mapper, configuration);
+        _userService = new UserService(_userRepository, _roleRepository, configuration);
     }
 
     [Fact]

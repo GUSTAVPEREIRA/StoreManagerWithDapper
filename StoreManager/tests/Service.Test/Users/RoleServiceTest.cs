@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Application.Users;
-using AutoMapper;
 using Core.Users;
 using Core.Users.Interfaces;
-using Core.Users.Mappings;
 using Core.Users.Models;
 using Dummie.Test.Users;
 using FluentAssertions;
@@ -19,26 +17,18 @@ namespace Service.Test.Users
     {
         private readonly IRoleService _roleService;
         private readonly IRoleRepository _roleRepository;
-        private readonly IMapper _mapper;
 
         public RoleServiceTest()
         {
-            var mockMapper = new MapperConfiguration(x => { x.AddProfile(new RoleMappingProfile()); });
-
-            _mapper = mockMapper.CreateMapper();
-
             _roleRepository = Substitute.For<IRoleRepository>();
-            _roleService = new RoleService(_mapper, _roleRepository);
+            _roleService = new RoleService(_roleRepository);
         }
 
         [Fact]
         public async Task CreatedRoleOk()
         {
             var role = new RoleDummie().Generate();
-            var resultExpected = _mapper.Map<RoleResponse>(role);
-            var roleRequest = _mapper.Map<RoleRequest>(role);
-
-            _roleRepository.CreateRoleAsync(Arg.Any<Role>()).Returns(role);
+            _roleRepository.CreateRoleAsync(Arg.Any<RoleRequest>()).Returns(role);
             var result = await _roleService.CreateRoleAsync(roleRequest);
 
             result.Should().BeEquivalentTo(resultExpected);

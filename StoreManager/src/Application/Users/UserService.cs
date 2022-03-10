@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Threading.Tasks;
-using AutoMapper;
 using Core.Auth.Models;
 using Core.Configurations;
 using Core.Configurations.Extensions;
 using Core.Cryptography;
 using Core.Errors;
-using Core.Users;
 using Core.Users.Interfaces;
 using Core.Users.Models;
 using Microsoft.Extensions.Configuration;
@@ -19,69 +17,55 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
-    private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
 
-    public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper,
+    public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
         IConfiguration configuration)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
-        _mapper = mapper;
         _configuration = configuration;
     }
 
     public async Task<UserResponse> InsertUserAsync(UserRequest userRequest)
     {
-        await CheckRoleExists(userRequest.RoleId);
-        var user = _mapper.Map<User>(userRequest);
+        userRequest.Password = EncryptPassword(userRequest.Password);
 
-        user.Disabled = false;
-        user.Password = EncryptPassword(user.Password);
-        user = await _userRepository.CreateUserAsync(user);
-
-        return _mapper.Map<UserResponse>(user);
+        return await _userRepository.CreateUserAsync(userRequest);
     }
 
-    public async Task<UserResponse> UpdatedUserAsync(UserUpdatedRequest updatedRequest)
+    public async Task<UserResponse> UpdatedUserAsync(UserUpdatedRequest userUpdatedRequest)
     {
-        await CheckRoleExists(updatedRequest.RoleId);
-        var user = _mapper.Map<User>(updatedRequest);
-
-        user = await _userRepository.UpdateUserAsync(user);
-
-        return _mapper.Map<UserResponse>(user);
+        await CheckRoleExists(userUpdatedRequest.RoleId);
+        
+        var userResponse = await _userRepository.UpdateUserAsync(userUpdatedRequest);
+        userResponse.Role = await _roleRepository.GetRoleAsync(userResponse.Role.Id);
+        
+        return userResponse;
     }
 
     public async Task<UserResponse> GetUserAsync(int id)
     {
-        var user = await _userRepository.GetUserAsync(id);
-
-        var userResponse = _mapper.Map<UserResponse>(user);
-
-        return userResponse;
+        return await _userRepository.GetUserAsync(id);
     }
 
     public async Task<IEnumerable<UserResponse>> GetUsersAsync()
     {
-        var users = await _userRepository.GetUsersAsync();
-        var usersResponse = _mapper.Map<IEnumerable<UserResponse>>(users);
-
-        return usersResponse;
+        return await _userRepository.GetUsersAsync();
     }
 
     public async Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(AuthLoginRequest loginRequest)
     {
         loginRequest.Password = EncryptPassword(loginRequest.Password);
-        var user = await _userRepository.GetUserByEmailAndPasswordAsync(loginRequest.Email, loginRequest.Password);
+        var authUserResponse =
+            await _userRepository.GetUserByEmailAndPasswordAsync(loginRequest.Email, loginRequest.Password);
 
-        if (user == null)
+        if (authUserResponse == null)
         {
             throw new AuthenticationException();
         }
 
-        user.Password = "";
-        var authUserResponse = _mapper.Map<AuthUserResponse>(user);
+        authUserResponse.Password = "";
 
         return authUserResponse;
     }
@@ -117,44 +101,55 @@ public class UserService : IUserService
                 $"{nameof(settings.AuthSettings.DefaultUserPassword)} and {nameof(settings.AuthSettings.DefaulUserEmail)}");
         }
 
-        var user = await UpdateDefaultUser(settings) ?? await CreateDefaultUser(settings);
-        user.Password = "";
-            
-        return _mapper.Map<UserResponse>(user);
+        var userResponse = await UpdateDefaultUser(settings) ?? await CreateDefaultUser(settings);
+        userResponse.Password = "";
+
+        return userResponse;
     }
 
-    private async Task<User> UpdateDefaultUser(Setting settings)
+    private async Task<UserResponse> UpdateDefaultUser(Setting settings)
     {
-        var user = await _userRepository.GetUserByEmailAsync(settings.AuthSettings.DefaulUserEmail);
+        var userResponse = await _userRepository.GetUserByEmailAsync(settings.AuthSettings.DefaulUserEmail);
 
-        if (user == null)
+        if (userResponse == null)
         {
             return null;
         }
 
-        user.Password = EncryptPassword(settings.AuthSettings.DefaultUserPassword);
-        await _userRepository.UpdateUserAsync(user);
-        await _userRepository.ChangeUserPasswordAsync(user);
+        userResponse.Password = EncryptPassword(settings.AuthSettings.DefaultUserPassword);
 
-        return user;
+        var userUpdatedRequest = new UserUpdatedRequest()
+        {
+            Id = userResponse.Id,
+            Disabled = userResponse.Disabled,
+            Email = userResponse.Email,
+            Password = userResponse.Password,
+            FullName = userResponse.FullName,
+            RoleId = userResponse.Role.Id
+        };
+
+        await _userRepository.UpdateUserAsync(userUpdatedRequest);
+
+        return await _userRepository.ChangeUserPasswordAsync(userUpdatedRequest);
     }
 
-    private async Task<User> CreateDefaultUser(Setting settings)
+    private async Task<UserResponse> CreateDefaultUser(Setting settings)
     {
-        var user = new User
+        var user = new UserRequest
         {
-            Disabled = false,
             Email = settings.AuthSettings.DefaulUserEmail,
             Password = EncryptPassword(settings.AuthSettings.DefaultUserPassword),
-            Role = new Role
-            {
-                Name = "Administrador",
-                IsAdmin = true
-            },
             FullName = "Usuário administrador"
         };
 
-        user.Role = await _roleRepository.CreateRoleAsync(user.Role);
+        var roleRequest = new RoleRequest()
+        {
+            Name = "Administrador",
+            IsAdmin = true
+        };
+
+        var roleResponse = await _roleRepository.CreateRoleAsync(roleRequest);
+        user.RoleId = roleResponse.Id;
 
         return await _userRepository.CreateUserAsync(user);
     }

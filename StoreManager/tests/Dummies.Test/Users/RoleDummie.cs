@@ -1,5 +1,6 @@
 using Bogus;
 using Core.Users;
+using Infrastructure.Users.Models;
 
 namespace Dummie.Test.Users;
 

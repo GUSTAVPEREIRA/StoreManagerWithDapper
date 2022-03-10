@@ -1,16 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Core.Users;
+using AutoMapper;
 using Core.Users.Interfaces;
+using Core.Users.Models;
 using Dapper;
 using Infrastructure.Providers;
+using Infrastructure.Users.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Users;
 
 public class UserRepository : BaseRepository, IUserRepository
 {
+    private readonly IMapper _mapper;
+
     private const string CreateUserQuery =
         @"INSERT INTO users 
               (email, password, disabled, full_name, role_id) 
@@ -18,8 +22,8 @@ public class UserRepository : BaseRepository, IUserRepository
               (@email, @password, @disabled, @full_name, @role_id) RETURNING id";
 
     private const string UpdateUserQuery = @"UPDATE users SET
-                 email=@email, disabled=@disabled, full_name=@full_name, role_id=@role_id 
-                 WHERE id=@id";
+                 email = @email, disabled = @disabled, full_name = @full_name, role_id = @role_id 
+                 WHERE id = @id";
 
     private const string SelectUserQuery = @"SELECT * FROM users as us
                               INNER JOIN roles AS rl ON us.role_id = rl.id 
@@ -37,20 +41,23 @@ public class UserRepository : BaseRepository, IUserRepository
 
     private const string SelectUserByEmailQuery = @"SELECT * FROM users as us
                               INNER JOIN roles AS rl ON us.role_id = rl.id 
-                              WHERE us.email=@email";
+                              WHERE us.email = @email";
 
     private const string UpdateUserPasswordQuery = @"UPDATE users SET
-                 password=@password
-                 WHERE id=@id";
+                 password = @password
+                 WHERE id = @id";
 
-    public UserRepository(IConfiguration configuration, IDbConnectionProvider provider) : base(configuration,
+    public UserRepository(IConfiguration configuration, IDbConnectionProvider provider, IMapper mapper) : base(
+        configuration,
         provider)
     {
+        _mapper = mapper;
     }
 
-    public async Task<User> CreateUserAsync(User user)
+    public async Task<UserResponse> CreateUserAsync(UserRequest userRequest)
     {
         await using var connection = GetConnection();
+        var user = _mapper.Map<UserRequest, User>(userRequest);
 
         var id = await connection.ExecuteScalarAsync<int>(CreateUserQuery, new
         {
@@ -63,12 +70,13 @@ public class UserRepository : BaseRepository, IUserRepository
 
         user.Id = id;
 
-        return user;
+        return _mapper.Map<User, UserResponse>(user);
     }
 
-    public async Task<User> UpdateUserAsync(User user)
+    public async Task<UserResponse> UpdateUserAsync(UserUpdatedRequest userUpdatedRequest)
     {
         await using var connection = GetConnection();
+        var user = _mapper.Map<UserUpdatedRequest, User>(userUpdatedRequest);
 
         await connection.ExecuteScalarAsync<int>(UpdateUserQuery, new
         {
@@ -79,10 +87,10 @@ public class UserRepository : BaseRepository, IUserRepository
             id = user.Id
         });
 
-        return user;
+        return _mapper.Map<User, UserResponse>(user);
     }
 
-    public async Task<User> GetUserAsync(int id)
+    public async Task<UserResponse> GetUserAsync(int id)
     {
         await using var connection = GetConnection();
 
@@ -97,10 +105,10 @@ public class UserRepository : BaseRepository, IUserRepository
                 id
             }, splitOn: "role_id").Result.FirstOrDefault();
 
-        return user;
+        return _mapper.Map<User, UserResponse>(user);
     }
 
-    public async Task<User> GetUserByEmailAsync(string email)
+    public async Task<UserResponse> GetUserByEmailAsync(string email)
     {
         await using var connection = GetConnection();
 
@@ -115,10 +123,10 @@ public class UserRepository : BaseRepository, IUserRepository
                 email
             }, splitOn: "role_id").Result.FirstOrDefault();
 
-        return user;
+        return _mapper.Map<User, UserResponse>(user);
     }
 
-    public async Task<IEnumerable<User>> GetUsersAsync()
+    public async Task<IEnumerable<UserResponse>> GetUsersAsync()
     {
         await using var connection = GetConnection();
 
@@ -129,10 +137,10 @@ public class UserRepository : BaseRepository, IUserRepository
                 return user;
             }, splitOn: "role_id").Result;
 
-        return users;
+        return _mapper.Map<IEnumerable<User>, IEnumerable<UserResponse>>(users);
     }
 
-    public async Task<User> GetUserByEmailAndPasswordAsync(string email, string password)
+    public async Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(string email, string password)
     {
         await using var connection = GetConnection();
 
@@ -147,12 +155,16 @@ public class UserRepository : BaseRepository, IUserRepository
                 password
             }, splitOn: "role_id, id").Result;
 
-        return users.FirstOrDefault();
+        var user = users.FirstOrDefault();
+
+        return _mapper.Map<User, AuthUserResponse>(user);
     }
 
-    public async Task<User> ChangeUserPasswordAsync(User user)
+    public async Task<UserResponse> ChangeUserPasswordAsync(UserRequest userRequest)
     {
         await using var connection = GetConnection();
+
+        var user = _mapper.Map<UserRequest, User>(userRequest);
 
         await connection.ExecuteScalarAsync<int>(UpdateUserPasswordQuery, new
         {
@@ -160,6 +172,6 @@ public class UserRepository : BaseRepository, IUserRepository
             id = user.Id
         });
 
-        return user;
+        return _mapper.Map<User, UserResponse>(user);
     }
 }

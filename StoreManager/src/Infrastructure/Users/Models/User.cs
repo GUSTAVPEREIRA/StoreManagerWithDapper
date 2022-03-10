@@ -1,4 +1,4 @@
-namespace Core.Users;
+namespace Infrastructure.Users.Models;
 
 public class User
 {
