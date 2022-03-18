@@ -160,11 +160,11 @@ public class UserRepository : BaseRepository, IUserRepository
         return _mapper.Map<User, AuthUserResponse>(user);
     }
 
-    public async Task<UserResponse> ChangeUserPasswordAsync(UserRequest userRequest)
+    public async Task<UserResponse> ChangeUserPasswordAsync(UserUpdatedRequest userUpdatedRequest)
     {
         await using var connection = GetConnection();
 
-        var user = _mapper.Map<UserRequest, User>(userRequest);
+        var user = _mapper.Map<UserUpdatedRequest, User>(userUpdatedRequest);
 
         await connection.ExecuteScalarAsync<int>(UpdateUserPasswordQuery, new
         {

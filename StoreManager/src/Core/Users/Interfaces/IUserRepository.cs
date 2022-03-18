@@ -12,5 +12,5 @@ public interface IUserRepository
     public Task<IEnumerable<UserResponse>> GetUsersAsync();
     public Task<AuthUserResponse> GetUserByEmailAndPasswordAsync(string email, string password);
     public Task<UserResponse> GetUserByEmailAsync(string email);
-    public Task<UserResponse> ChangeUserPasswordAsync(UserRequest userRequest);
+    public Task<UserResponse> ChangeUserPasswordAsync(UserUpdatedRequest userUpdatedRequest);
 }

@@ -31,16 +31,18 @@ public class UserService : IUserService
     {
         userRequest.Password = EncryptPassword(userRequest.Password);
 
+        await CheckRoleExists(userRequest.RoleId);
+
         return await _userRepository.CreateUserAsync(userRequest);
     }
 
     public async Task<UserResponse> UpdatedUserAsync(UserUpdatedRequest userUpdatedRequest)
     {
         await CheckRoleExists(userUpdatedRequest.RoleId);
-        
+
         var userResponse = await _userRepository.UpdateUserAsync(userUpdatedRequest);
         userResponse.Role = await _roleRepository.GetRoleAsync(userResponse.Role.Id);
-        
+
         return userResponse;
     }
 

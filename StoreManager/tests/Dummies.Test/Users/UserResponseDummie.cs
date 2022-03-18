@@ -12,7 +12,7 @@ public sealed class UserResponseDummie : Faker<UserResponse>
         RuleFor(x => x.Id, x => x.Random.Int());
         RuleFor(x => x.Password, userRequest.Password);
         RuleFor(x => x.FullName, userRequest.FullName);
-        RuleFor(x => x.Role, new RoleReponseDummie(userRequest.RoleId).Generate());
+        RuleFor(x => x.Role, new RoleResponseDummie(userRequest.RoleId).Generate());
     }
 
     public UserResponseDummie()
@@ -22,6 +22,6 @@ public sealed class UserResponseDummie : Faker<UserResponse>
         RuleFor(x => x.Id, x => x.Random.Int());
         RuleFor(x => x.Password, x => x.Lorem.Word());
         RuleFor(x => x.FullName, x => x.Person.FullName);
-        RuleFor(x => x.Role, new RoleReponseDummie().Generate());
+        RuleFor(x => x.Role, new RoleResponseDummie().Generate());
     }
 }

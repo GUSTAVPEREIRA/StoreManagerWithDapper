@@ -49,7 +49,7 @@ namespace Controller.Test.Users
         public async Task UpdatedRoleOk()
         {
             var roleRequest = new RoleRequestUpdatedDummie().Generate();
-            var roleResponse = new RoleReponseDummie().Generate();
+            var roleResponse = new RoleResponseDummie().Generate();
             _roleService.UpdateRoleAsync(Arg.Any<RoleUpdatedRequest>()).Returns(roleResponse);
 
             var result = (ObjectResult) await _roleController.UpdateRole(roleRequest);
@@ -62,7 +62,7 @@ namespace Controller.Test.Users
         [Fact]
         public async Task GetRoleOk()
         {
-            var roleResponse = new RoleReponseDummie().Generate();
+            var roleResponse = new RoleResponseDummie().Generate();
             _roleService.GetRoleAsync(Arg.Any<int>()).Returns(roleResponse);
 
             var result = (ObjectResult) await _roleController.GetRole(roleResponse.Id);
@@ -75,7 +75,7 @@ namespace Controller.Test.Users
         [Fact]
         public async Task GetRolesOk()
         {
-            var roleResponse = new RoleReponseDummie().Generate(new Random().Next(1, 100));
+            var roleResponse = new RoleResponseDummie().Generate(new Random().Next(1, 100));
             _roleService.GetRolesAsync().Returns(roleResponse);
 
             var result = (ObjectResult) await _roleController.ListRoles();

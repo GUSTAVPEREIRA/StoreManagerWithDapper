@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Users.Interfaces;
+using Core.Users.Models;
 using Dummie.Test.Users;
-using Infrastructure.Users.Models;
 
 namespace Repository.Test.Seeders
 {
@@ -15,21 +15,23 @@ namespace Repository.Test.Seeders
             _roleRepository = roleRepository;
         }
 
-        public async Task<List<Role>> CreateRoles(int count)
+        public async Task<List<RoleResponse>> CreateRoles(int count)
         {
-            var roles = new RoleDummie().Generate(count);
+            var roleRequests = new RoleRequestDummie().Generate(count);
 
-            return await InsertRoles(roles);
+            return await InsertRoles(roleRequests);
         }
 
-        private async Task<List<Role>> InsertRoles(List<Role> roles)
+        private async Task<List<RoleResponse>> InsertRoles(List<RoleRequest> roleRequests)
         {
-            foreach (var role in roles)
+            List<RoleResponse> roleResponses = new(roleRequests.Count);
+            
+            foreach (var role in roleRequests)
             {
-                await _roleRepository.CreateRoleAsync(role);
+                roleResponses.Add(await _roleRepository.CreateRoleAsync(role));
             }
 
-            return roles;
+            return roleResponses;
         }
     }
 }

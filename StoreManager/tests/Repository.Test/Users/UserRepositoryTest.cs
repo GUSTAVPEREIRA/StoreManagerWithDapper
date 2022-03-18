@@ -1,10 +1,13 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Core.Users.Interfaces;
+using Core.Users.Models;
 using Dummie.Test.Users;
 using FluentAssertions;
 using Infrastructure.Users;
+using Infrastructure.Users.Mappings;
 using Repository.Test.Configuration;
 using Repository.Test.Seeders;
 using Xunit;
@@ -14,18 +17,39 @@ namespace Repository.Test.Users
     public sealed class UserRepositoryTest : IDisposable
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly RoleSeeder _roleSeeder;
         private readonly UserSeeder _userSeeder;
+        private readonly IMapper _mapper;
         private const string DatabaseName = "usersDatabase";
 
         public UserRepositoryTest()
         {
+            var mapperConfiguration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddMaps(typeof(RoleMappingProfile));
+                cfg.AddMaps(typeof(UserMappingProfile));
+                cfg.CreateMap<UserUpdatedRequest, UserResponse>().BeforeMap((userUpdatedRequest, userResponse) =>
+                {
+                    if (userUpdatedRequest.RoleId != 0)
+                    {
+                        userResponse.Role = new RoleResponse
+                        {
+                            Id = userUpdatedRequest.RoleId
+                        };
+                    }
+                });
+                
+                cfg.CreateMap<RoleResponse, RoleUpdatedRequest>();
+            });
+
             var configuration = new RepositoryTestConfiguration().CreateConfigurations(DatabaseName);
             DatabaseConfiguration.CreateMigrations(DatabaseName);
 
-            _userRepository = new UserRepository(configuration, new SqLiteDbConnectionProvider());
-            var roleRepository = new RoleRepository(configuration, new SqLiteDbConnectionProvider());
-            _roleSeeder = new RoleSeeder(roleRepository);
+            _mapper = mapperConfiguration.CreateMapper();
+            _userRepository = new UserRepository(configuration, new SqLiteDbConnectionProvider(), _mapper);
+            _roleRepository = new RoleRepository(configuration, new SqLiteDbConnectionProvider(), _mapper);
+            _roleSeeder = new RoleSeeder(_roleRepository);
             _userSeeder = new UserSeeder(_userRepository, _roleSeeder);
         }
 
@@ -33,39 +57,41 @@ namespace Repository.Test.Users
         [Fact]
         public async Task InsertUserOk()
         {
-            var user = new UserDummie().Generate();
-            var role = await _roleSeeder.CreateRoles(1);
-            user.Role = role.FirstOrDefault();
+            var userRequest = new UserRequestDummie().Generate();
+            var roleResponses = await _roleSeeder.CreateRoles(1);
+            var roleResponse = roleResponses.FirstOrDefault();
+            userRequest.RoleId = roleResponse!.Id;
 
-            var result = await _userRepository.CreateUserAsync(user);
-            user.Id = result.Id;
+            var result = await _userRepository.CreateUserAsync(userRequest);
 
-            user.Should().BeEquivalentTo(result);
+            result.Should().NotBeNull();
         }
 
         [Fact]
         public async Task UpdateUserOk()
         {
-            var users = await _userSeeder.CreateUsers(1);
-            var user = users.FirstOrDefault();
+            var userResponses = await _userSeeder.CreateUsers(1);
+            var userResponse = userResponses.First();
 
-            Assert.True(user != null);
+            var updatedUser = new UserUpdateRequestDummie().Generate();
+            updatedUser.RoleId = userResponse.Role.Id;
+            updatedUser.Id = userResponse.Id;
 
-            var updatedUser = new UserDummie(user.Role).Generate();
-            updatedUser.Id = user.Id;
             await _userRepository.UpdateUserAsync(updatedUser);
-            user = await _userRepository.GetUserAsync(user.Id);
+            userResponse = await _userRepository.GetUserAsync(userResponse.Id);
 
-            user.Password = updatedUser.Password;
-            user.Should().BeEquivalentTo(updatedUser);
+            var expectedValue = _mapper.Map<UserUpdatedRequest, UserResponse>(updatedUser);
+            expectedValue.Role = await _roleRepository.GetRoleAsync(expectedValue.Role.Id);
+            userResponse.Password = expectedValue.Password;
+            userResponse.Should().BeEquivalentTo(expectedValue);
         }
 
         [Fact]
         public async Task GetUserOk()
         {
             var users = await _userSeeder.CreateUsers(1);
-            var user = users.FirstOrDefault();
-            Assert.True(user != null);
+            var user = users.First();
+            user.Role = await _roleRepository.GetRoleAsync(user.Role.Id);
 
             var result = await _userRepository.GetUserAsync(user.Id);
 
@@ -76,35 +102,47 @@ namespace Repository.Test.Users
         public async Task GetUsersOk()
         {
             var count = new Random().Next(1, 100);
-            var users = await _userSeeder.CreateUsers(count);
+            var userResponses = await _userSeeder.CreateUsers(count);
+
+            foreach (var userResponse in userResponses)
+            {
+                userResponse.Role = await _roleRepository.GetRoleAsync(userResponse.Role.Id);
+            }
 
             var result = await _userRepository.GetUsersAsync();
 
-            users.Should().BeEquivalentTo(result);
+            userResponses.Should().BeEquivalentTo(result);
         }
 
         [Fact]
         public async Task GetUsersByEmailAndPasswordOk()
         {
             var users = await _userSeeder.CreateUsers(1);
-            var user = users.First();
+            var userResponse = users.First();
+            var roleResponse = await _roleRepository.GetRoleAsync(userResponse.Role.Id);
+            userResponse.Role = roleResponse;
 
-            var result = await _userRepository.GetUserByEmailAndPasswordAsync(user.Email, user.Password);
-            user.Password = null;
-            user.Should().BeEquivalentTo(result);
+
+            var result =
+                await _userRepository.GetUserByEmailAndPasswordAsync(userResponse.Email, userResponse.Password);
+
+            result.Role = roleResponse;
+            userResponse.Password = null;
+            userResponse.Should().BeEquivalentTo(result);
         }
-        
+
         [Fact]
         public async Task GetUsersByEmail()
         {
             var users = await _userSeeder.CreateUsers(1);
             var user = users.First();
+            user.Role = await _roleRepository.GetRoleAsync(user.Role.Id);
 
             var result = await _userRepository.GetUserByEmailAsync(user.Email);
 
             user.Should().BeEquivalentTo(result);
         }
-        
+
         [Fact]
         public async Task GetUsersByEmailNotFound()
         {
@@ -120,13 +158,17 @@ namespace Repository.Test.Users
         [Fact]
         public async Task ChangePasswordOk()
         {
-            var users = await _userSeeder.CreateUsers(1);
+            var users = await _userSeeder.CreateUsers(new Random().Next(2, 5));
             var user = users.First();
-            
-            user.Password = "123456";
-            var result = await _userRepository.ChangeUserPasswordAsync(user);
+            var userUpdatedRequest = new UserUpdatedRequest
+            {
+                Password = user.Password,
+                Id = user.Id
+            };
 
-            result.Should().BeEquivalentTo(user);
+            var result = await _userRepository.ChangeUserPasswordAsync(userUpdatedRequest);
+
+            result.Password.Should().BeEquivalentTo(userUpdatedRequest.Password);
         }
 
         public void Dispose()

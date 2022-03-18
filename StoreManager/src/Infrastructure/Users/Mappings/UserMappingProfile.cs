@@ -29,8 +29,20 @@ public class UserMappingProfile : Profile
                 };
             }
         });
-        
-        CreateMap<User, UserResponse>().ReverseMap();
+
+        CreateMap<User, UserResponse>().BeforeMap((user, userResponse) =>
+        {
+            if (user.Role != null)
+            {
+                userResponse.Role = new RoleResponse
+                {
+                    Id = user.Role.Id,
+                    Name = user.Role.Name,
+                    IsAdmin = user.Role.IsAdmin
+                };
+            }
+        });
+        CreateMap<UserResponse, User>();
         CreateMap<User, AuthUserResponse>();
     }
 }

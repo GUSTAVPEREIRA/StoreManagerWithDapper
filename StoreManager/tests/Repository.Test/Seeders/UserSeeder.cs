@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Users;
 using Core.Users.Interfaces;
+using Core.Users.Models;
 using Dummie.Test.Users;
 using Infrastructure.Users.Models;
 
@@ -19,17 +20,15 @@ namespace Repository.Test.Seeders
             _roleSeeder = roleSeeder;
         }
 
-        public async Task<List<User>> CreateUsers(int count)
+        public async Task<List<UserResponse>> CreateUsers(int count)
         {
             var role = await InsertRole();
-            var users = new UserDummie(role).Generate(count);
+            var userRequests = new UserRequestDummie(role.Id).Generate(count);
 
-            await InsertUsers(users);
-
-            return users;
+            return await InsertUsers(userRequests);
         }
 
-        private async Task<Role> InsertRole()
+        private async Task<RoleResponse> InsertRole()
         {
             var roles = await _roleSeeder.CreateRoles(1);
             var role = roles.FirstOrDefault();
@@ -37,12 +36,16 @@ namespace Repository.Test.Seeders
             return role;
         }
 
-        private async Task InsertUsers(List<User> users)
+        private async Task<List<UserResponse>> InsertUsers(List<UserRequest> users)
         {
+            List<UserResponse> userResponses = new(users.Count);
+            
             foreach (var user in users)
             {
-                await _userRepository.CreateUserAsync(user);
+                userResponses.Add(await _userRepository.CreateUserAsync(user));
             }
+
+            return userResponses;
         }
     }
 }
