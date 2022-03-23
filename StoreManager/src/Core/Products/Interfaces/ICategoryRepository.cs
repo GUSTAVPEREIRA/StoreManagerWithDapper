@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Core.Products.Models;
 
 namespace Core.Products.Interfaces;
 
 public interface ICategoryRepository
 {
-    public Task<Category> CreateCategoryAsync(Category category);
-    public Task<Category> UpdateCategoryAsync(Category category);
-    public Task<Category> GetCategoryByIdAsync(int id);
+    public Task<CategoryResponse> CreateCategoryAsync(CategoryRequest categoryRequest);
+    public Task<CategoryResponse> UpdateCategoryAsync(CategoryUpdatedRequest categoryUpdatedRequest);
+    public Task<CategoryResponse> GetCategoryByIdAsync(int id);
     public Task<bool> DeleteCategoryByIdAsync(int id);
-    public Task<IEnumerable<Category>> ListCategoriesAsync();
+    public Task<IEnumerable<CategoryResponse>> ListCategoriesAsync();
 }
