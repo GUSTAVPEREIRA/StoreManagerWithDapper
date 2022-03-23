@@ -1,5 +1,6 @@
 using Bogus;
 using Core.Products;
+using Infrastructure.Products.Models;
 
 namespace Dummie.Test.Products;
 

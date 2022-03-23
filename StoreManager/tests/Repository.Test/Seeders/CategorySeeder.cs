@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Products;
 using Core.Products.Interfaces;
+using Core.Products.Models;
 using Dummie.Test.Products;
 
 namespace Repository.Test.Seeders;
@@ -14,21 +14,23 @@ public class CategorySeeder
     {
         _categoryRepository = categoryRepository;
     }
-    
-    public async Task<List<Category>> CreateCategories(int count)
+
+    public async Task<List<CategoryResponse>> CreateCategories(int count)
     {
-        var categories = new CategoryDummie().Generate(count);
+        var categories = new CategoryRequestDummie().Generate(count);
 
         return await InsertCategories(categories);
     }
 
-    private async Task<List<Category>> InsertCategories(List<Category> categories)
+    private async Task<List<CategoryResponse>> InsertCategories(List<CategoryRequest> categories)
     {
+        var categoryResponses = new List<CategoryResponse>();
+
         foreach (var category in categories)
         {
-            await _categoryRepository.CreateCategoryAsync(category);
+            categoryResponses.Add(await _categoryRepository.CreateCategoryAsync(category));
         }
 
-        return categories;
+        return categoryResponses;
     }
 }
