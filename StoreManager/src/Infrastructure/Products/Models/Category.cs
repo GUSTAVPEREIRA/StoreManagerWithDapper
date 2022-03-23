@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Core.Products;
+namespace Infrastructure.Products.Models;
 
 public class Category
 {   
