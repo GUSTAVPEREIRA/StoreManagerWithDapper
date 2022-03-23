@@ -63,7 +63,7 @@ public class CategoryRepository : BaseRepository, ICategoryRepository
         });
 
         var categoryResponse = _mapper.Map<CategoryUpdatedRequest, CategoryResponse>(categoryUpdatedRequest);
-        
+
         return updated > 0 ? categoryResponse : null;
     }
 
@@ -97,7 +97,7 @@ public class CategoryRepository : BaseRepository, ICategoryRepository
         await using var connection = GetConnection();
 
         var categories = await connection.QueryAsync<Category>(ListCategoriesQuery);
-        
+
         return _mapper.Map<IEnumerable<Category>, IEnumerable<CategoryResponse>>(categories);
     }
 }
